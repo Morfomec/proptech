@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative w-full min-h-[500px] flex items-center justify-center bg-[#408A71] overflow-hidden py-24">
+      <section className="relative w-full min-h-[500px] flex items-center justify-center bg-[#408A71] overflow-hidden pt-32 pb-24">
         {/* Abstract Background pattern */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
         
@@ -18,14 +18,14 @@ export default function Home() {
           </p>
           
           {/* Search Bar */}
-          <div className="w-full max-w-3xl bg-white rounded-full p-2 flex flex-col md:flex-row items-center shadow-2xl text-gray-900 border border-gray-100">
+          <div className="w-full max-w-3xl bg-white rounded-2xl md:rounded-full p-3 md:p-2 flex flex-col md:flex-row items-center shadow-2xl text-gray-900 border border-gray-100 gap-3 md:gap-0">
             <div className="flex-1 flex items-center px-4 w-full md:w-auto border-b md:border-b-0 md:border-r border-gray-100 py-2">
-              <MapPin size={20} className="text-gray-400 mr-2 shrink-0" />
-              <input type="text" placeholder="Location, neighborhood, or city" className="w-full bg-transparent text-gray-800 outline-none placeholder:text-gray-400" />
+              <MapPin size={20} className="text-[#408A71] md:text-gray-400 mr-3 md:mr-2 shrink-0" />
+              <input type="text" placeholder="Location, neighborhood, or city" className="w-full bg-transparent text-gray-800 outline-none placeholder:text-gray-400 text-base" />
             </div>
             <div className="flex-1 flex items-center px-4 w-full md:w-auto py-2">
-              <HomeIcon size={20} className="text-gray-400 mr-2 shrink-0" />
-              <select className="w-full bg-transparent text-gray-800 outline-none appearance-none cursor-pointer">
+              <HomeIcon size={20} className="text-[#408A71] md:text-gray-400 mr-3 md:mr-2 shrink-0" />
+              <select className="w-full bg-transparent text-gray-800 outline-none appearance-none cursor-pointer text-base">
                 <option value="">Property Type</option>
                 <option value="apartment">Apartment</option>
                 <option value="house">House</option>
@@ -33,7 +33,7 @@ export default function Home() {
                 <option value="land">Land</option>
               </select>
             </div>
-            <button className="w-full md:w-auto mt-2 md:mt-0 bg-[#408A71] hover:bg-[#34745c] text-white px-8 py-3 rounded-full font-semibold transition-colors flex items-center justify-center border-2 border-transparent hover:border-white/20">
+            <button className="w-full md:w-auto bg-[#408A71] hover:bg-[#34745c] text-white px-8 py-3.5 md:py-3 rounded-xl md:rounded-full font-semibold transition-all active:scale-95 flex items-center justify-center border-2 border-transparent hover:border-white/20">
               <Search size={18} className="mr-2" /> Search
             </button>
           </div>
