@@ -1,16 +1,32 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use } from "react";
 import { MapPin, Home, Building, Key, Clock, CheckCircle2, ChevronLeft, Heart, Share2, BadgeCheck, Phone, Mail } from "lucide-react";
 import Link from "next/link";
+import { usePreferences } from "../../../context/PreferencesContext";
+import { getCompatibility } from "../../../utils/compatibility";
 
 export default function PropertyDetailsPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const unwrappedParams = use(params);
   const unwrappedSearchParams = use(searchParams);
+  const { prefs } = usePreferences();
   
   const id = unwrappedParams.id;
   const isSale = unwrappedSearchParams.type === "sale";
-  const isOwner = Number(id) % 2 === 0; // arbitrary logic to mix it up
+  const isOwner = Number(id) % 2 === 0;
+
+  // Mock rules based on ID to match the list page
+  const mockRules = [
+    { sleepSchedule: "early bird", foodAllowed: "veg", cleanliness: "high", workModeAllowed: "office", guestsAllowed: false, personality: "quiet", coupleFriendly: false },
+    { sleepSchedule: "night owl", foodAllowed: "any", cleanliness: "medium", workModeAllowed: "wfh", guestsAllowed: true, personality: "social", coupleFriendly: true },
+    { sleepSchedule: "any", foodAllowed: "veg", cleanliness: "medium", workModeAllowed: "any", guestsAllowed: false, personality: "quiet", coupleFriendly: false },
+    { sleepSchedule: "early bird", foodAllowed: "any", cleanliness: "low", workModeAllowed: "wfh", guestsAllowed: true, personality: "social", coupleFriendly: true },
+    { sleepSchedule: "night owl", foodAllowed: "any", cleanliness: "high", workModeAllowed: "office", guestsAllowed: false, personality: "any", coupleFriendly: false },
+    { sleepSchedule: "any", foodAllowed: "any", cleanliness: "any", workModeAllowed: "any", guestsAllowed: true, personality: "any", coupleFriendly: true },
+  ];
+  
+  const propertyRules = mockRules[(Number(id) - 1) % mockRules.length] || mockRules[0];
+  const compatibility = !isSale ? getCompatibility(prefs, propertyRules) : null;
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-24 pb-20">
@@ -38,9 +54,16 @@ export default function PropertyDetailsPage({ params, searchParams }: { params: 
            
            {/* Badges */}
            <div className="absolute top-6 left-6 flex flex-col gap-3 z-20">
-              <span className="bg-white/95 backdrop-blur-sm text-[#408A71] font-extrabold px-4 py-2 rounded-xl shadow-md tracking-wide uppercase">
-                {isSale ? 'For Sale' : 'For Rent'}
-              </span>
+              <div className="flex gap-3">
+                <span className="bg-white/95 backdrop-blur-sm text-[#408A71] font-extrabold px-4 py-2 rounded-xl shadow-md tracking-wide uppercase">
+                  {isSale ? 'For Sale' : 'For Rent'}
+                </span>
+                {!isSale && compatibility !== null && (
+                  <span className="bg-green-100/95 backdrop-blur-sm text-green-800 font-extrabold px-4 py-2 rounded-xl shadow-md tracking-wide uppercase">
+                    Your compatibility: {compatibility}%
+                  </span>
+                )}
+              </div>
               <span className="bg-gray-900/80 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5 w-max">
                 <Clock size={12} /> Listed 3 days ago
               </span>

@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description: "A modern property rental and sales platform.",
 };
 
+import { PreferencesProvider } from "@/context/PreferencesContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,9 +30,11 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} scroll-smooth antialiased`}>
       <body className="flex flex-col min-h-screen bg-gray-50 pt-20">
         <Navbar />
-        <main className="flex-grow">
-          {children}
-        </main>
+        <PreferencesProvider>
+          <main className="flex-grow">
+            {children}
+          </main>
+        </PreferencesProvider>
         <Footer />
       </body>
     </html>
