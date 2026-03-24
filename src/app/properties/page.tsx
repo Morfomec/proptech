@@ -249,25 +249,25 @@ export default function PropertiesPage() {
                      </div>
                      {isPrefsOpen && (
                        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-6">
-                         <CustomSelect label="Sleep Schedule" value={prefs.sleepSchedule} onChange={(val) => setPrefs({...prefs, sleepSchedule: val})} options={[{value: 'early bird', label: 'Early Bird'}, {value: 'night owl', label: 'Night Owl'}]} />
-                         <CustomSelect label="Diet" value={prefs.food} onChange={(val) => setPrefs({...prefs, food: val})} options={[{value: 'veg', label: 'Vegetarian'}, {value: 'non-veg', label: 'Non-Vegetarian'}, {value: 'any', label: 'Any'}]} />
+                         <CustomSelect label="Sleep Schedule" value={prefs.sleepSchedule} onChange={(val) => setPrefs({...prefs, sleepSchedule: val as string})} options={[{value: 'early bird', label: 'Early Bird'}, {value: 'night owl', label: 'Night Owl'}]} />
+                         <CustomSelect label="Diet" value={prefs.food} onChange={(val) => setPrefs({...prefs, food: val as string})} options={[{value: 'veg', label: 'Vegetarian'}, {value: 'non-veg', label: 'Non-Vegetarian'}, {value: 'any', label: 'Any'}]} />
                          <div className="flex gap-4">
                            <div className="flex-1">
-                             <CustomSelect label="Tidiness" value={prefs.cleanliness} onChange={(val) => setPrefs({...prefs, cleanliness: val})} options={[{value: 'low', label: 'Low'}, {value: 'medium', label: 'Medium'}, {value: 'high', label: 'High'}]} />
+                             <CustomSelect label="Tidiness" value={prefs.cleanliness} onChange={(val) => setPrefs({...prefs, cleanliness: val as string})} options={[{value: 'low', label: 'Low'}, {value: 'medium', label: 'Medium'}, {value: 'high', label: 'High'}]} />
                            </div>
                            <div className="flex-1">
-                             <CustomSelect label="Work Mode" value={prefs.workMode} onChange={(val) => setPrefs({...prefs, workMode: val})} options={[{value: 'wfh', label: 'WFH'}, {value: 'office', label: 'Office'}]} />
+                             <CustomSelect label="Work Mode" value={prefs.workMode} onChange={(val) => setPrefs({...prefs, workMode: val as string})} options={[{value: 'wfh', label: 'WFH'}, {value: 'office', label: 'Office'}]} />
                            </div>
                          </div>
                          <div className="flex gap-4">
                            <div className="flex-1">
-                             <CustomSelect label="Guests" value={prefs.guests} onChange={(val) => setPrefs({...prefs, guests: val})} options={[{value: true, label: 'Allowed'}, {value: false, label: 'Strict No'}]} />
+                             <CustomSelect label="Guests" value={prefs.guests} onChange={(val) => setPrefs({...prefs, guests: val as boolean})} options={[{value: true, label: 'Allowed'}, {value: false, label: 'Strict No'}]} />
                            </div>
                            <div className="flex-1">
-                             <CustomSelect label="Couples" value={prefs.coupleFriendly} onChange={(val) => setPrefs({...prefs, coupleFriendly: val})} options={[{value: true, label: 'Friendly'}, {value: false, label: 'Strict No'}]} />
+                             <CustomSelect label="Couples" value={prefs.coupleFriendly} onChange={(val) => setPrefs({...prefs, coupleFriendly: val as boolean})} options={[{value: true, label: 'Friendly'}, {value: false, label: 'Strict No'}]} />
                            </div>
                          </div>
-                         <CustomSelect label="Personality" value={prefs.personality} onChange={(val) => setPrefs({...prefs, personality: val})} options={[{value: 'quiet', label: 'Quiet & Reserved'}, {value: 'social', label: 'Social & Talkative'}]} />
+                         <CustomSelect label="Personality" value={prefs.personality} onChange={(val) => setPrefs({...prefs, personality: val as string})} options={[{value: 'quiet', label: 'Quiet & Reserved'}, {value: 'social', label: 'Social & Talkative'}]} />
                        </div>
                      )}
                    </div>
