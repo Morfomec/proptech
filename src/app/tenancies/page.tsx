@@ -90,7 +90,7 @@ export default function TenanciesDashboard() {
                     <h3 className="text-xl font-bold text-gray-900 mb-1">{propertyMap[tenancy.property_id]?.title || `Property #${tenancy.property_id}`}</h3>
                     <p className="text-sm font-semibold text-gray-500 flex items-center gap-1.5">
                       <ShieldCheck size={16} className={tenancy.status === 'active' ? "text-green-500" : "text-amber-500"} />
-                      Tenant: <span className="text-gray-800">{tenancy.tenantName || tenancy.tenant_name}</span>
+                      Tenant: <span className="text-gray-800">{tenancy.tenant_name}</span>
                     </p>
                   </div>
                   <div className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${tenancy.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -101,22 +101,22 @@ export default function TenanciesDashboard() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                   <div className="bg-gray-50 p-3 rounded-xl">
                     <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Rent</p>
-                    <p className="font-bold text-gray-900">₹{tenancy.rentAmount?.toLocaleString() || tenancy.rent_amount?.toLocaleString()}</p>
+                    <p className="font-bold text-gray-900">₹{tenancy.rent_amount?.toLocaleString()}</p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-xl">
                     <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Start Date</p>
-                    <p className="font-bold text-gray-900">{tenancy.startDate || tenancy.start_date}</p>
+                    <p className="font-bold text-gray-900">{tenancy.start_date}</p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-xl">
                     <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Due Date</p>
                     <p className="font-bold flex items-center gap-1 text-amber-600">
-                       <Clock size={16}/> {tenancy.paymentDueDay || tenancy.payment_due_day}th
+                       <Clock size={16}/> {tenancy.payment_due_day}th
                     </p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-xl">
                     <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Deposit</p>
                     <p className="font-bold text-gray-900">
-                      ₹{tenancy.depositAmount?.toLocaleString() || tenancy.deposit_amount?.toLocaleString()}
+                      ₹{tenancy.deposit_amount?.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ export default function TenanciesDashboard() {
                 <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
                   <span className="text-gray-600 font-medium">Monthly Revenue</span>
                   <span className="text-xl font-bold text-gray-900">
-                    ₹{tenancies.reduce((acc, curr) => acc + (curr.rentAmount || curr.rent_amount || 0), 0).toLocaleString()}
+                    ₹{tenancies.reduce((acc, curr) => acc + (curr.rent_amount || 0), 0).toLocaleString()}
                   </span>
                 </div>
               </div>
