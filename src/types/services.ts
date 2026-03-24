@@ -1,4 +1,4 @@
-import { User, Property, PropertyImage, ContactRequest, Rating } from './models';
+import { User, Property, PropertyImage, ContactRequest, Rating, Tenancy, Agreement, Payment } from './models';
 
 export interface IAuthService {
   getCurrentUser(): Promise<User | null>;
@@ -34,4 +34,20 @@ export interface IAdminService {
   verifyUser(userId: string, verified: boolean): Promise<void>;
   getPendingProperties(): Promise<Property[]>;
   getPendingUsers(): Promise<User[]>;
+}
+
+export interface ITenancyService {
+  createTenancy(data: Omit<Tenancy, 'id' | 'status'>): Promise<Tenancy>;
+  getTenancyById(id: string): Promise<Tenancy | null>;
+  getTenanciesByOwner(ownerId: string): Promise<Tenancy[]>;
+  getTenanciesByTenant(tenantId: string): Promise<Tenancy[]>;
+  updateTenancyStatus(id: string, status: Tenancy['status']): Promise<void>;
+  
+  createAgreement(data: Omit<Agreement, 'id' | 'createdAt'>): Promise<Agreement>;
+  getAgreementByTenancy(tenancyId: string): Promise<Agreement | null>;
+  signAgreement(id: string, role: 'owner' | 'tenant'): Promise<void>;
+  
+  createPayment(data: Omit<Payment, 'id' | 'createdAt'>): Promise<Payment>;
+  getPaymentsByTenancy(tenancyId: string): Promise<Payment[]>;
+  markPaymentPaid(paymentId: string, receiptUrl?: string): Promise<void>;
 }

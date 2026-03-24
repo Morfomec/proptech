@@ -5,6 +5,8 @@ import Link from "next/link";
 import { MapPin, Home, Building, Key, Clock, Filter, ChevronDown, SlidersHorizontal, Check, Settings2, X, BadgeCheck } from "lucide-react";
 import { getCompatibility, UserPreferences } from "../../utils/compatibility";
 import { usePreferences } from "../../context/PreferencesContext";
+import { propertyService } from "@/lib/propertyService";
+import { Property } from "@/types/models";
 
 type SelectOption = { value: string | boolean; label: string };
 const CustomSelect = ({ label, options, value, onChange }: { label: string, options: SelectOption[], value: string | boolean, onChange: (val: string | boolean) => void }) => {
@@ -67,14 +69,25 @@ export default function PropertiesPage() {
   
   // Draft filter states
   const [minCompatibility, setMinCompatibility] = useState(0);
+  const [bedrooms, setBedrooms] = useState<string | null>(null);
 
   // Applied filter states (used for rendering listings)
   const [appliedPrefs, setAppliedPrefs] = useState<UserPreferences>(prefs);
   const [appliedMinCompatibility, setAppliedMinCompatibility] = useState(0);
+  const [appliedBedrooms, setAppliedBedrooms] = useState<string | null>(null);
+  
+  const [visibleCount, setVisibleCount] = useState(4);
+  const [dbProperties, setDbProperties] = useState<Property[]>([]);
+
+  useEffect(() => {
+    propertyService.getProperties().then(setDbProperties).catch(console.error);
+  }, []);
 
   const handleApplyFilters = () => {
     setAppliedPrefs(prefs);
     setAppliedMinCompatibility(minCompatibility);
+    setAppliedBedrooms(bedrooms);
+    setVisibleCount(4); // Reset pagination on new filter
     if (window.innerWidth < 1024) setIsMobileFilterOpen(false);
   };
   
@@ -82,6 +95,9 @@ export default function PropertiesPage() {
     setListingType("rent");
     setMinCompatibility(0);
     setAppliedMinCompatibility(0);
+    setBedrooms(null);
+    setAppliedBedrooms(null);
+    setVisibleCount(4);
     
     // Default preferences
     const defaultPrefs = {
@@ -114,17 +130,47 @@ export default function PropertiesPage() {
   };
   
   // Mock property data with rules
-  const mockProperties = [
-    { id: 1, listerLevel: 4, rules: { sleepSchedule: "early bird", foodAllowed: "veg", cleanliness: "high", workModeAllowed: "office", guestsAllowed: false, personality: "quiet", coupleFriendly: false } },
-    { id: 2, listerLevel: 3, rules: { sleepSchedule: "night owl", foodAllowed: "any", cleanliness: "medium", workModeAllowed: "wfh", guestsAllowed: true, personality: "social", coupleFriendly: true } },
-    { id: 3, listerLevel: 2, rules: { sleepSchedule: "any", foodAllowed: "veg", cleanliness: "medium", workModeAllowed: "any", guestsAllowed: false, personality: "quiet", coupleFriendly: false } },
-    { id: 4, listerLevel: 4, rules: { sleepSchedule: "early bird", foodAllowed: "any", cleanliness: "low", workModeAllowed: "wfh", guestsAllowed: true, personality: "social", coupleFriendly: true } },
-    { id: 5, listerLevel: 1, rules: { sleepSchedule: "night owl", foodAllowed: "any", cleanliness: "high", workModeAllowed: "office", guestsAllowed: false, personality: "any", coupleFriendly: false } },
-    { id: 6, listerLevel: 3, rules: { sleepSchedule: "any", foodAllowed: "any", cleanliness: "any", workModeAllowed: "any", guestsAllowed: true, personality: "any", coupleFriendly: true } },
+  const mockRules = [
+    { sleepSchedule: "early bird", foodAllowed: "veg", cleanliness: "high", workModeAllowed: "office", guestsAllowed: false, personality: "quiet", coupleFriendly: false },
+    { sleepSchedule: "night owl", foodAllowed: "any", cleanliness: "medium", workModeAllowed: "wfh", guestsAllowed: true, personality: "social", coupleFriendly: true },
+    { sleepSchedule: "any", foodAllowed: "veg", cleanliness: "medium", workModeAllowed: "any", guestsAllowed: false, personality: "quiet", coupleFriendly: false },
+    { sleepSchedule: "early bird", foodAllowed: "any", cleanliness: "low", workModeAllowed: "wfh", guestsAllowed: true, personality: "social", coupleFriendly: true },
+    { sleepSchedule: "night owl", foodAllowed: "any", cleanliness: "high", workModeAllowed: "office", guestsAllowed: false, personality: "any", coupleFriendly: false },
+    { sleepSchedule: "any", foodAllowed: "any", cleanliness: "any", workModeAllowed: "any", guestsAllowed: true, personality: "any", coupleFriendly: true },
   ];
 
+  const mockProperties = Array.from({ length: 12 }, (_, i) => ({
+    id: i + 1,
+    listerLevel: (i % 4) + 1,
+    rules: mockRules[i % mockRules.length],
+    bedrooms: (i % 4) + 1
+  }));
+
   // Compute compatibility for rent listings using the APPLIED preferences
-  const propertiesWithCompat = mockProperties.map(p => ({
+  const combinedProperties = [
+    ...dbProperties.map(p => ({
+      ...p,
+      isDbQuery: true,
+      listerLevel: 2, // default for DB mock rendering
+      rules: p.rules || mockRules[0],
+      bedrooms: p.beds || 1,
+      baths: p.baths || 1,
+      sqft: p.sqft || 1000,
+    })),
+    ...mockProperties.map(p => ({
+      ...p,
+      isDbQuery: false,
+      title: `Modern Serenity Appt ${p.id}`,
+      city: "Thondayad Bypass, Kozhikode, Kerala",
+      rent: 12000 + (p.id as number) * 2000,
+      salePrice: 4500000 + (p.id as number) * 500000,
+      type: "rent",
+      baths: 2,
+      sqft: 1000 + (p.id as number) * 100,
+    }))
+  ];
+
+  const propertiesWithCompat = combinedProperties.map(p => ({
     ...p,
     compatibility: listingType === "rent" ? getCompatibility(appliedPrefs, p.rules) : null,
   }));
@@ -132,6 +178,7 @@ export default function PropertiesPage() {
   // Filter and sort displayed properties using APPLIED filters
   const displayedProperties = propertiesWithCompat
     .filter(p => listingType !== "rent" || (p.compatibility ?? 0) >= appliedMinCompatibility)
+    .filter(p => !appliedBedrooms || (appliedBedrooms === '4+' ? p.bedrooms >= 4 : p.bedrooms === parseInt(appliedBedrooms)))
     .sort((a, b) => {
       // Prioritize verified listers (level 3 and 4)
       const aVerified = a.listerLevel >= 3 ? 1 : 0;
@@ -146,6 +193,8 @@ export default function PropertiesPage() {
       }
       return 0;
     });
+    
+  const paginatedProperties = displayedProperties.slice(0, visibleCount);
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full flex-grow">
@@ -311,7 +360,11 @@ export default function PropertiesPage() {
                 <label className="block text-sm font-semibold text-gray-900 mb-3">Bedrooms</label>
                 <div className="flex items-center gap-2">
                   {['1', '2', '3', '4+'].map((num) => (
-                    <button key={num} className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${num === '2' ? 'bg-[#408A71] text-white shadow-md' : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'}`}>
+                    <button 
+                      key={num} 
+                      onClick={() => setBedrooms(bedrooms === num ? null : num)}
+                      className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${bedrooms === num ? 'bg-[#408A71] text-white shadow-md' : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
+                    >
                       {num}
                     </button>
                   ))}
@@ -329,7 +382,7 @@ export default function PropertiesPage() {
           <div className="flex-1">
             {/* Top Bar - Desktop */}
             <div className="hidden lg:flex items-center justify-between mb-8">
-              <p className="text-gray-600 font-medium">Showing <span className="font-bold text-gray-900">12</span> properties</p>
+              <p className="text-gray-600 font-medium">Showing <span className="font-bold text-gray-900">{displayedProperties.length}</span> properties</p>
               
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-gray-500">Sort by:</span>
@@ -343,7 +396,7 @@ export default function PropertiesPage() {
 
             {/* Properties List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-              {displayedProperties.map((property) => {
+              {paginatedProperties.map((property) => {
                 const item = property.id;
                 const sampleImages = [
                   "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
@@ -353,7 +406,8 @@ export default function PropertiesPage() {
                   "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
                   "https://images.unsplash.com/photo-1449844908441-8829872d2607?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                 ];
-                const imageSrc = sampleImages[item % sampleImages.length];
+                const itemHash = typeof item === 'number' ? item : String(item).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const imageSrc = sampleImages[itemHash % sampleImages.length];
 
                 return (
                 <Link key={item} href={`/properties/${item}?type=${listingType}`} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group cursor-pointer flex flex-col h-full">
@@ -370,7 +424,7 @@ export default function PropertiesPage() {
                         )}
                       </div>
                       <span className="bg-gray-900/80 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1.5 ml-auto">
-                        <Clock size={12} /> {item}w ago
+                        <Clock size={12} /> {property.isDbQuery ? 'Just now' : `${item}w ago`}
                       </span>
                     </div>
                     {/* Mock Image Placeholder */}
@@ -384,19 +438,19 @@ export default function PropertiesPage() {
                     <div>
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#408A71] transition-colors line-clamp-1 pr-2">
-                          Modern Serenity Appt {item}
+                          {property.title}
                         </h3>
                         <div className="text-lg font-extrabold text-[#408A71] shrink-0">
                           {listingType === "rent" ? (
-                            <>₹{12000 + item * 2000} <span className="text-sm text-gray-400 font-medium">/mo</span></>
+                            <>₹{property.rent?.toLocaleString() || 12000} <span className="text-sm text-gray-400 font-medium">/mo</span></>
                           ) : (
-                            <>₹{4500000 + item * 500000}</>
+                            <>₹{((property as any).salePrice || property.rent * 400)?.toLocaleString()}</>
                           )}
                         </div>
                       </div>
                       
                       <p className="text-gray-500 text-sm mb-4 flex items-center gap-1.5 line-clamp-1 font-medium">
-                        <MapPin size={16} className="shrink-0 text-gray-400" /> Thondayad Bypass, Kozhikode, Kerala
+                        <MapPin size={16} className="shrink-0 text-gray-400" /> {property.city}
                       </p>
 
                       {/* Verification Badges */}
@@ -417,9 +471,9 @@ export default function PropertiesPage() {
                     </div>
                     
                     <div className="flex items-center justify-between text-gray-600 text-sm pt-4 border-t border-gray-100 font-medium">
-                      <div className="flex items-center gap-1.5"><Building size={16} className="text-gray-400" /> {2 + (item % 2)} Beds</div>
-                      <div className="flex items-center gap-1.5"><Key size={16} className="text-gray-400" /> 2 Baths</div>
-                      <div className="flex items-center gap-1.5"><Home size={16} className="text-gray-400" /> 1,{item}00 sqft</div>
+                      <div className="flex items-center gap-1.5"><Building size={16} className="text-gray-400" /> {property.bedrooms} Beds</div>
+                      <div className="flex items-center gap-1.5"><Key size={16} className="text-gray-400" /> {property.baths} Baths</div>
+                      <div className="flex items-center gap-1.5"><Home size={16} className="text-gray-400" /> {property.sqft} sqft</div>
                     </div>
                   </div>
                 </Link>
@@ -427,11 +481,16 @@ export default function PropertiesPage() {
             </div>
 
             {/* Pagination / Load More */}
-            <div className="mt-12 flex justify-center">
-              <button className="bg-white border-2 border-gray-200 text-gray-700 font-semibold px-8 py-3 rounded-xl hover:border-[#408A71] hover:text-[#408A71] transition-all shadow-sm active:scale-95">
-                Load More Properties
-              </button>
-            </div>
+            {visibleCount < displayedProperties.length && (
+              <div className="mt-12 flex justify-center">
+                <button 
+                  onClick={() => setVisibleCount(prev => prev + 4)}
+                  className="bg-white border-2 border-gray-200 text-gray-700 font-semibold px-8 py-3 rounded-xl hover:border-[#408A71] hover:text-[#408A71] transition-all shadow-sm active:scale-95"
+                >
+                  Load More Properties
+                </button>
+              </div>
+            )}
             
           </div>
         </div>

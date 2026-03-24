@@ -1,19 +1,49 @@
 "use client";
 
 import { use } from "react";
-import { MapPin, Home, Building, Key, Clock, CheckCircle2, ChevronLeft, Heart, Share2, BadgeCheck, Phone, Mail } from "lucide-react";
+import { MapPin, Home, Building, Key, Clock, CheckCircle2, ChevronLeft, Heart, Share2, BadgeCheck, Phone, Mail, FileText } from "lucide-react";
 import Link from "next/link";
 import { usePreferences } from "../../../context/PreferencesContext";
 import { getCompatibility } from "../../../utils/compatibility";
+import { useAuth } from "../../../context/AuthContext";
+import { propertyService } from "../../../lib/propertyService";
+import { tenancyService } from "../../../lib/tenancyService";
+import { Property } from "../../../types/models";
+import { useState, useEffect } from "react";
 
 export default function PropertyDetailsPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const unwrappedParams = use(params);
   const unwrappedSearchParams = use(searchParams);
   const { prefs } = usePreferences();
+  const { user, userProfile } = useAuth();
   
   const id = unwrappedParams.id;
   const isSale = unwrappedSearchParams.type === "sale";
-  const isOwner = Number(id) % 2 === 0;
+  
+  const [property, setProperty] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [hasTenancy, setHasTenancy] = useState(false);
+
+  useEffect(() => {
+    propertyService.getPropertyById(id)
+      .then((data) => {
+        setProperty(data);
+        setLoading(false);
+      })
+      .catch((e) => {
+        console.error(e);
+        setLoading(false);
+      });
+      
+    tenancyService.getTenanciesByProperty(id)
+      .then((tenancies) => {
+        setHasTenancy(tenancies.length > 0);
+      })
+      .catch(console.error);
+  }, [id]);
+
+  const numId = isNaN(Number(id)) ? 1 : Number(id);
+  const isOwner = property ? property.ownerId === user?.uid : numId % 2 === 0;
 
   // Mock rules based on ID to match the list page
   const mockRules = [
@@ -25,8 +55,12 @@ export default function PropertyDetailsPage({ params, searchParams }: { params: 
     { sleepSchedule: "any", foodAllowed: "any", cleanliness: "any", workModeAllowed: "any", guestsAllowed: true, personality: "any", coupleFriendly: true },
   ];
   
-  const propertyRules = mockRules[(Number(id) - 1) % mockRules.length] || mockRules[0];
-  const compatibility = !isSale ? getCompatibility(prefs, propertyRules) : null;
+  const propertyRules = property?.rules || (mockRules[(numId - 1) % mockRules.length] || mockRules[0]);
+  const compatibility = (property?.type === 'rent' || (!property && !isSale)) ? getCompatibility(prefs, propertyRules) : null;
+  
+  if (loading) {
+    return <div className="min-h-screen pt-32 text-center text-gray-500 font-bold">Loading details...</div>;
+  }
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-24 pb-20">
@@ -56,7 +90,7 @@ export default function PropertyDetailsPage({ params, searchParams }: { params: 
            <div className="absolute top-6 left-6 flex flex-col gap-3 z-20">
               <div className="flex gap-3">
                 <span className="bg-white/95 backdrop-blur-sm text-[#408A71] font-extrabold px-4 py-2 rounded-xl shadow-md tracking-wide uppercase">
-                  {isSale ? 'For Sale' : 'For Rent'}
+                  {(property?.type === 'sale' || (!property && isSale)) ? 'For Sale' : 'For Rent'}
                 </span>
                 {!isSale && compatibility !== null && (
                   <span className="bg-green-100/95 backdrop-blur-sm text-green-800 font-extrabold px-4 py-2 rounded-xl shadow-md tracking-wide uppercase">
@@ -76,26 +110,26 @@ export default function PropertyDetailsPage({ params, searchParams }: { params: 
           {/* Left Details */}
           <div className="flex-1">
             <div className="mb-8">
-              <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">Modern Serenity Appt {id}</h1>
+              <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">{property?.title || `Modern Serenity Appt ${id}`}</h1>
               <p className="text-gray-500 text-lg flex items-center gap-2 font-medium">
-                <MapPin size={20} className="text-gray-400" /> Thondayad Bypass, Kozhikode, Kerala
+                <MapPin size={20} className="text-gray-400" /> {property?.city || 'Thondayad Bypass, Kozhikode, Kerala'}
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-6 py-6 border-y border-gray-100 mb-8 bg-white px-6 rounded-2xl shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-green-50 rounded-xl text-[#408A71]"><Building size={24} /></div>
-                <div><p className="text-sm text-gray-500 font-semibold">Bedrooms</p><p className="font-bold text-gray-900 text-lg">{2 + (Number(id) % 2)}</p></div>
+                <div><p className="text-sm text-gray-500 font-semibold">Bedrooms</p><p className="font-bold text-gray-900 text-lg">{property?.beds || 2 + (numId % 2)}</p></div>
               </div>
               <div className="w-px h-10 bg-gray-200 hidden sm:block"></div>
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-blue-50 rounded-xl text-blue-600"><Key size={24} /></div>
-                <div><p className="text-sm text-gray-500 font-semibold">Bathrooms</p><p className="font-bold text-gray-900 text-lg">2</p></div>
+                <div><p className="text-sm text-gray-500 font-semibold">Bathrooms</p><p className="font-bold text-gray-900 text-lg">{property?.baths || 2}</p></div>
               </div>
               <div className="w-px h-10 bg-gray-200 hidden sm:block"></div>
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-purple-50 rounded-xl text-purple-600"><Home size={24} /></div>
-                <div><p className="text-sm text-gray-500 font-semibold">Square Feet</p><p className="font-bold text-gray-900 text-lg">1,{id}00 sqft</p></div>
+                <div><p className="text-sm text-gray-500 font-semibold">Square Feet</p><p className="font-bold text-gray-900 text-lg">{property?.sqft || 1000 + numId * 100} sqft</p></div>
               </div>
             </div>
 
@@ -128,12 +162,14 @@ export default function PropertyDetailsPage({ params, searchParams }: { params: 
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 sticky top-28">
               
               <div className="mb-8">
-                <p className="text-gray-500 font-semibold tracking-wide uppercase text-sm mb-1">{isSale ? 'Selling Price' : 'Monthly Rent'}</p>
+                <p className="text-gray-500 font-semibold tracking-wide uppercase text-sm mb-1">
+                  {(property?.type === 'sale' || (!property && isSale)) ? 'Selling Price' : 'Monthly Rent'}
+                </p>
                 <div className="text-4xl font-extrabold text-[#408A71] flex items-end">
-                  {isSale ? (
-                    <>₹{4500000 + Number(id) * 500000}</>
+                  {(property?.type === 'sale' || (!property && isSale)) ? (
+                    <>₹{((property as any)?.salePrice || (property?.rent || 10000) * 400 || 4500000 + numId * 500000).toLocaleString()}</>
                   ) : (
-                    <>₹{12000 + Number(id) * 2000} <span className="text-xl text-gray-400 font-bold ml-1 mb-1">/mo</span></>
+                    <>₹{(property?.rent || 12000 + numId * 2000).toLocaleString()} <span className="text-xl text-gray-400 font-bold ml-1 mb-1">/mo</span></>
                   )}
                 </div>
               </div>
@@ -169,6 +205,23 @@ export default function PropertyDetailsPage({ params, searchParams }: { params: 
                   <Phone size={20} /> Show Phone Number
                 </button>
               </div>
+
+              {/* Owner Actions */}
+              {userProfile && ['owner', 'agent', 'builder'].includes(userProfile.role) && (
+                <div className="mt-8 border-t border-gray-100 pt-8">
+                  <h3 className="text-sm font-bold tracking-wider text-gray-500 uppercase mb-4">Property Management</h3>
+                  {hasTenancy ? (
+                    <Link href="/tenancies" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
+                      <FileText size={20} /> Manage Tenancy
+                    </Link>
+                  ) : (
+                    <Link href={`/properties/${id}/tenancy-create`} className="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
+                      <FileText size={20} /> Create Tenancy
+                    </Link>
+                  )}
+                  <p className="text-xs text-gray-400 mt-3 text-center">Digitally manage your tenant, payments, and agreements.</p>
+                </div>
+              )}
 
             </div>
           </div>

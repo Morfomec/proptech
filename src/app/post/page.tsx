@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ShieldAlert, CheckCircle, ChevronDown, Check } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import { propertyService } from "@/lib/propertyService";
 
 type SelectOption = { value: string | boolean; label: string };
 const CustomSelect = ({ label, options, value, onChange }: { label: string, options: SelectOption[], value: any, onChange: (val: any) => void }) => {
@@ -85,13 +86,32 @@ export default function PostPropertyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await propertyService.createProperty({
+        title: formState.title,
+        description: `Stunning ${formState.type} property in ${formState.location}`, // Mock description
+        rent: parseInt(formState.price) || 0,
+        city: formState.location,
+        address: formState.location,
+        ownerId: user.uid,
+        type: formState.type as any,
+        beds: parseInt(formState.beds),
+        baths: parseInt(formState.baths),
+        sqft: parseInt(formState.sqft),
+        rules: formState.type === 'rent' ? tenantPrefs : undefined,
+      });
       setIsSuccess(true);
-    }, 1500);
+    } catch (error) {
+      console.error("Submission failed", error);
+      alert("Failed to create property. See console.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!user) {

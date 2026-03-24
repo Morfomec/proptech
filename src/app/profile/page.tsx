@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 
 export default function ProfilePage() {
   const { user, userProfile, updateUserProfile } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     role: "owner" as ProfileRole,
     name: "",
@@ -31,17 +31,17 @@ export default function ProfilePage() {
       setTimeout(() => {
         setFormData({
           role: userProfile.role || "owner",
-        name: userProfile.name || user.displayName || "",
-        email: userProfile.email || user.email || "",
-        phone: userProfile.phone || "",
-        city: userProfile.city || "",
-        profilePhoto: userProfile.profilePhoto || "",
-        agencyName: userProfile.agencyName || "",
-        officeAddress: userProfile.officeAddress || "",
-        licenseRera: userProfile.licenseRera || "",
-        companyName: userProfile.companyName || "",
-        website: userProfile.website || "",
-        gstNumber: userProfile.gstNumber || "",
+          name: userProfile.name || user.displayName || "",
+          email: userProfile.email || user.email || "",
+          phone: userProfile.phone || "",
+          city: userProfile.city || "",
+          profilePhoto: userProfile.profilePhoto || "",
+          agencyName: userProfile.agencyName || "",
+          officeAddress: userProfile.officeAddress || "",
+          licenseRera: userProfile.licenseRera || "",
+          companyName: userProfile.companyName || "",
+          website: userProfile.website || "",
+          gstNumber: userProfile.gstNumber || "",
         });
       }, 0);
     }
@@ -86,23 +86,23 @@ export default function ProfilePage() {
 
         {/* Role Selector */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-8 relative overflow-hidden">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">I am operating as a(n):</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">I am operating as:</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button 
+            <button
               onClick={() => setRole("owner")}
               className={`p-5 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${formData.role === "owner" ? "border-[#408A71] bg-green-50/50" : "border-gray-100 bg-white hover:border-gray-200"}`}
             >
               <UserIcon size={32} className={formData.role === "owner" ? "text-[#408A71]" : "text-gray-400"} />
               <span className={`font-bold ${formData.role === "owner" ? "text-gray-900" : "text-gray-600"}`}>Owner / Individual</span>
             </button>
-            <button 
+            <button
               onClick={() => setRole("agent")}
               className={`p-5 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${formData.role === "agent" ? "border-[#408A71] bg-green-50/50" : "border-gray-100 bg-white hover:border-gray-200"}`}
             >
               <Briefcase size={32} className={formData.role === "agent" ? "text-[#408A71]" : "text-gray-400"} />
               <span className={`font-bold ${formData.role === "agent" ? "text-gray-900" : "text-gray-600"}`}>Agent / Broker</span>
             </button>
-            <button 
+            <button
               onClick={() => setRole("builder")}
               className={`p-5 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${formData.role === "builder" ? "border-[#408A71] bg-green-50/50" : "border-gray-100 bg-white hover:border-gray-200"}`}
             >
@@ -116,11 +116,11 @@ export default function ProfilePage() {
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-6">
             <Edit3 className="text-[#408A71]" size={28} />
-             Profile Details
+            Profile Details
           </h2>
-            
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
+
             {/* Common Name & Email & Phone */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
@@ -212,7 +212,7 @@ export default function ProfilePage() {
             )}
 
             <div className="md:col-span-2 pt-4">
-              <button 
+              <button
                 onClick={handleSaveProfile}
                 disabled={saving}
                 className="bg-[#408A71] hover:bg-[#34745c] text-white px-8 py-3 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2"
@@ -246,7 +246,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                      <Phone size={18} className="text-gray-400"/> Phone OTP Verification
+                      <Phone size={18} className="text-gray-400" /> Phone OTP Verification
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">Required to post any properties.</p>
                   </div>
@@ -267,7 +267,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                        <IdCard size={18} className="text-gray-400"/> Personal ID Proof
+                        <IdCard size={18} className="text-gray-400" /> Personal ID Proof
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">Optional. Unlocks verified badge.</p>
                     </div>
@@ -289,7 +289,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                        <Building size={18} className="text-gray-400"/> Property Proof
+                        <Building size={18} className="text-gray-400" /> Property Proof
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">Optional. Establish genuine ownership.</p>
                     </div>
@@ -311,7 +311,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                        <Briefcase size={18} className="text-gray-400"/> Agency Proof
+                        <Briefcase size={18} className="text-gray-400" /> Agency Proof
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">Required for featured listings & broker verification.</p>
                     </div>
@@ -334,7 +334,7 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                          <Building size={18} className="text-gray-400"/> Company Details Proof
+                          <Building size={18} className="text-gray-400" /> Company Details Proof
                         </h3>
                         <p className="text-sm text-gray-500 mt-1">Optional. Get verified company page.</p>
                       </div>
@@ -345,7 +345,7 @@ export default function ProfilePage() {
                       </button>
                     )}
                   </div>
-                  
+
                   <div className={`flex items-center justify-between p-5 rounded-xl border ${userProfile.reraVerified ? 'bg-green-50/50 border-green-100' : 'bg-white border-gray-100 shadow-sm'} ${!userProfile.phoneVerified && 'opacity-60 grayscale'}`}>
                     <div className="flex items-start gap-4">
                       <div className="mt-0.5">
@@ -353,7 +353,7 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                          <ShieldCheck size={18} className="text-gray-400"/> Developer RERA
+                          <ShieldCheck size={18} className="text-gray-400" /> Developer RERA
                         </h3>
                         <p className="text-sm text-gray-500 mt-1">Optional. Official developer recognition.</p>
                       </div>

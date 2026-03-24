@@ -92,6 +92,14 @@ export default function Navbar() {
                     className="absolute top-12 right-0 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-2 flex flex-col z-50"
                   >
                     <Link
+                      href="/my-properties"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#408A71] transition-colors"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      <Building2 size={16} />
+                      My Properties
+                    </Link>
+                    <Link
                       href="/profile"
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#408A71] transition-colors"
                       onClick={() => setDropdownOpen(false)}
@@ -196,6 +204,14 @@ export default function Navbar() {
 
               {user ? (
                 <>
+                  <Link
+                    href="/my-properties"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <Building2 size={20} />
+                    My Properties
+                  </Link>
                   <Link
                     href="/profile"
                     onClick={() => setIsOpen(false)}
