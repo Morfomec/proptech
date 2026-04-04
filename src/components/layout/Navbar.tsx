@@ -68,18 +68,17 @@ export default function Navbar() {
           <Link href="/post" className="text-sm font-bold text-[#408A71] bg-white hover:bg-gray-50 px-5 py-2.5 rounded-full transition-colors border border-gray-200 shadow-sm">
             List Property
           </Link>
-          {user ? (
             <div className="relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full border border-gray-200"
               >
-                {user.photoURL ? (
+                {user?.photoURL ? (
                   <img src={user.photoURL} alt="Profile" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
                 ) : (
                   <UserIcon size={18} className="text-[#408A71]" />
                 )}
-                <span>{user.displayName || user.email?.split('@')[0] || "User"}</span>
+                <span>{user?.displayName || user?.email?.split('@')[0] || "Demo User"}</span>
                 <ChevronDown size={16} className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
               </button>
 
@@ -115,31 +114,22 @@ export default function Navbar() {
                       <Settings size={16} />
                       Settings
                     </Link>
-                    <hr className="my-1 border-gray-100" />
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
-                    >
-                      <LogOut size={16} />
-                      Log Out
-                    </button>
+                    {user && (
+                      <>
+                        <hr className="my-1 border-gray-100" />
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                        >
+                          <LogOut size={16} />
+                          Log Out
+                        </button>
+                      </>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-          ) : (
-            <>
-              <Link href="/login" className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">
-                Log In
-              </Link>
-              <Link
-                href="/signup"
-                className="flex items-center gap-2 bg-[#408A71] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#34745c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
-              >
-                Get Started <ArrowRight size={16} />
-              </Link>
-            </>
-          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -161,7 +151,7 @@ export default function Navbar() {
             className="md:hidden bg-white border-b border-gray-100 overflow-hidden"
           >
             <div className="px-6 py-4 flex flex-col gap-3">
-              {user && (
+              {user ? (
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-2">
                   {user.photoURL ? (
                     <img src={user.photoURL} alt="Profile" className="w-10 h-10 rounded-full" referrerPolicy="no-referrer" />
@@ -173,6 +163,16 @@ export default function Navbar() {
                   <div>
                     <p className="font-semibold text-gray-900">{user.displayName || "User"}</p>
                     <p className="text-xs text-gray-500">{user.email}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-2">
+                  <div className="w-10 h-10 rounded-full bg-[#408A71]/20 flex items-center justify-center">
+                    <UserIcon size={20} className="text-[#408A71]" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Demo User</p>
+                    <p className="text-xs text-gray-500">Preview Mode</p>
                   </div>
                 </div>
               )}
@@ -202,60 +202,41 @@ export default function Navbar() {
                 List Property
               </Link>
 
-              {user ? (
-                <>
-                  <Link
-                    href="/my-properties"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    <Building2 size={20} />
-                    My Properties
-                  </Link>
-                  <Link
-                    href="/profile"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    <UserIcon size={20} />
-                    Profile
-                  </Link>
-                  <Link
-                    href="/settings"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    <Settings size={20} />
-                    Settings
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsOpen(false);
-                    }}
-                    className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors text-left"
-                  >
-                    <LogOut size={20} />
-                    Log Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="text-lg font-medium p-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    Log In
-                  </Link>
-                  <Link
-                    href="/signup"
-                    onClick={() => setIsOpen(false)}
-                    className="bg-[#408A71] text-white p-3 rounded-xl text-center text-lg font-semibold shadow-md active:scale-95 transition-all"
-                  >
-                    Get Started
-                  </Link>
-                </>
+              <Link
+                href="/my-properties"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <Building2 size={20} />
+                My Properties
+              </Link>
+              <Link
+                href="/profile"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <UserIcon size={20} />
+                Profile
+              </Link>
+              <Link
+                href="/settings"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <Settings size={20} />
+                Settings
+              </Link>
+              {user && (
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors text-left"
+                >
+                  <LogOut size={20} />
+                  Log Out
+                </button>
               )}
             </div>
           </motion.div>

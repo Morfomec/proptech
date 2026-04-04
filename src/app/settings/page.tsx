@@ -7,18 +7,7 @@ import Link from "next/link";
 export default function SettingsPage() {
   const { user } = useAuth();
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-32 pb-20 flex flex-col items-center justify-center px-6">
-        <SettingsIcon size={64} className="text-gray-300 mb-6" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Please Log In</h1>
-        <p className="text-gray-500 mb-8 max-w-md text-center">You must be logged in to view your account settings.</p>
-        <Link href="/login" className="bg-[#408A71] text-white px-8 py-3 rounded-full font-bold hover:bg-[#34745c] transition-colors">
-          Go to Login
-        </Link>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32 pb-20 text-left">

@@ -110,7 +110,6 @@ export default function PostPropertyPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
     
     setIsSubmitting(true);
     try {
@@ -120,7 +119,7 @@ export default function PostPropertyPage() {
         rent: parseInt(formState.price) || 0,
         city: formState.location,
         address: formState.location,
-        ownerId: user.uid,
+        ownerId: user?.uid || "guest_user",
         type: formState.type as any,
         beds: parseInt(formState.beds),
         baths: parseInt(formState.baths),
@@ -145,17 +144,7 @@ export default function PostPropertyPage() {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-32 pb-20 flex flex-col items-center justify-center px-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Login Required</h1>
-        <p className="text-gray-500 mb-6 text-center max-w-sm">You need an account to post properties. Join our community today!</p>
-        <Link href="/login" className="bg-[#408A71] text-white px-8 py-3 rounded-full font-bold hover:bg-[#34745c] transition-colors">
-          Log In or Sign Up
-        </Link>
-      </div>
-    );
-  }
+
 
   // Level 1 Guard
   if (userProfile.level === 1) {
