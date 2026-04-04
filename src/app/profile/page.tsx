@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth, ProfileRole } from "@/context/AuthContext";
-import { CheckCircle2, Circle, ShieldCheck, Phone, IdCard, Building, User as UserIcon, MapPin, Briefcase, Globe, Mail, Link as LinkIcon, Edit3 } from "lucide-react";
+import { CheckCircle2, Circle, ShieldCheck, Phone, IdCard, Building, User as UserIcon, MapPin, Briefcase, Globe, Mail, Link as LinkIcon, Edit3, Activity, TrendingUp, TrendingDown, Star } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
@@ -77,6 +77,34 @@ export default function ProfilePage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     }, 600);
+  };
+
+  // Trust Score Helpers
+  const getScoreCategory = (score: number) => {
+    if (score >= 800) return { label: "Excellent", color: "text-emerald-600", bg: "bg-emerald-100", stroke: "text-emerald-500" };
+    if (score >= 700) return { label: "Good", color: "text-blue-600", bg: "bg-blue-100", stroke: "text-blue-500" };
+    if (score >= 600) return { label: "Average", color: "text-yellow-600", bg: "bg-yellow-100", stroke: "text-yellow-500" };
+    return { label: "Risky", color: "text-red-600", bg: "bg-red-100", stroke: "text-red-500" };
+  };
+
+  const handleScoreEvent = (reason: string, change: number) => {
+    const currentScore = userProfile.trustScore ?? 600;
+    
+    let newScore = currentScore + change;
+    if (newScore > 900) newScore = 900;
+    if (newScore < 300) newScore = 300;
+
+    const newActivity = {
+      id: Date.now().toString(),
+      reason,
+      change,
+      timestamp: new Date().toISOString()
+    };
+
+    updateUserProfile({
+      trustScore: newScore,
+      scoreActivity: [newActivity, ...(userProfile.scoreActivity || [])].slice(0, 10)
+    });
   };
 
   return (
@@ -220,6 +248,85 @@ export default function ProfilePage() {
                 {saving ? "Saving..." : "Save Profile Details"}
               </button>
               {saved && <span className="ml-4 text-green-600 font-semibold text-sm">Profile saved successfully!</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* Trust Score Section (MVP Demo) */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-8 relative overflow-hidden">
+          <div className="flex flex-col md:flex-row gap-8">
+            <div className="md:w-1/3 border-r border-gray-100 pr-0 md:pr-8 flex flex-col items-center md:items-start">
+               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-6">
+                <Star className="text-yellow-500" size={28} />
+                Trust Score
+              </h2>
+              
+              <div className="flex flex-col items-center w-full">
+                <div className="relative w-48 h-48 mb-4">
+                  <div className="w-full h-full rounded-full flex items-center justify-center relative">
+                    <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                       <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-gray-100" />
+                       <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" 
+                           strokeDasharray={2 * Math.PI * 88} 
+                           strokeDashoffset={2 * Math.PI * 88 * (1 - ((userProfile.trustScore ?? 600) - 300) / 600)} 
+                           className={`${getScoreCategory(userProfile.trustScore ?? 600).stroke} transition-all duration-1000 ease-out`} 
+                           strokeLinecap="round" />
+                    </svg>
+                    <div className="text-center z-10 flex flex-col items-center">
+                      <span className="text-5xl font-extrabold text-gray-900 leading-none">{userProfile.trustScore ?? 600}</span>
+                      <span className="block text-sm font-semibold text-gray-400 mt-1">out of 900</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className={`px-5 py-2 rounded-full text-sm font-extrabold ${getScoreCategory(userProfile.trustScore ?? 600).bg} ${getScoreCategory(userProfile.trustScore ?? 600).color}`}>
+                  {getScoreCategory(userProfile.trustScore ?? 600).label}
+                </div>
+              </div>
+            </div>
+            
+            <div className="md:w-2/3">
+               <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Demo Simulator Actions</h3>
+               <div className="flex flex-wrap gap-2 mb-8">
+                 {userProfile.role === 'owner' || userProfile.role === 'agent' || userProfile.role === 'builder' ? (
+                   <>
+                     <button onClick={() => handleScoreEvent("Quick Response", 10)} className="text-xs font-semibold px-3 py-2 bg-green-50 text-green-700 rounded-lg border border-green-200 hover:bg-green-100 shadow-sm transition-colors">Quick Response (+10)</button>
+                     <button onClick={() => handleScoreEvent("Positive Interaction", 10)} className="text-xs font-semibold px-3 py-2 bg-green-50 text-green-700 rounded-lg border border-green-200 hover:bg-green-100 shadow-sm transition-colors">Pos. Interaction (+10)</button>
+                     <button onClick={() => handleScoreEvent("No/Poor Response", -20)} className="text-xs font-semibold px-3 py-2 bg-red-50 text-red-700 rounded-lg border border-red-200 hover:bg-red-100 shadow-sm transition-colors">No Response (-20)</button>
+                     <button onClick={() => handleScoreEvent("Complaint Raised", -30)} className="text-xs font-semibold px-3 py-2 bg-red-50 text-red-700 rounded-lg border border-red-200 hover:bg-red-100 shadow-sm transition-colors">Complaint (-30)</button>
+                   </>
+                 ) : (
+                   <>
+                     <button onClick={() => handleScoreEvent("Early Rent Payment", 25)} className="text-xs font-semibold px-3 py-2 bg-green-50 text-green-700 rounded-lg border border-green-200 hover:bg-green-100 shadow-sm transition-colors">Paid Early (+25)</button>
+                     <button onClick={() => handleScoreEvent("On-time Rent Payment", 15)} className="text-xs font-semibold px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200 hover:bg-emerald-100 shadow-sm transition-colors">Paid On-time (+15)</button>
+                     <button onClick={() => handleScoreEvent("Late Rent Payment", -20)} className="text-xs font-semibold px-3 py-2 bg-orange-50 text-orange-700 rounded-lg border border-orange-200 hover:bg-orange-100 shadow-sm transition-colors">Paid Late (-20)</button>
+                     <button onClick={() => handleScoreEvent("Missed Rent Payment", -50)} className="text-xs font-semibold px-3 py-2 bg-red-50 text-red-700 rounded-lg border border-red-200 hover:bg-red-100 shadow-sm transition-colors">Missed Payment (-50)</button>
+                   </>
+                 )}
+               </div>
+
+               <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                 <Activity size={16} /> Recent Activity
+               </h3>
+               
+               <div className="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                 {!(userProfile.scoreActivity && userProfile.scoreActivity.length > 0) ? (
+                    <p className="text-sm text-gray-500 italic">No recent score activity. Complete actions to build your trust score.</p>
+                 ) : (
+                    userProfile.scoreActivity.map((activity) => (
+                      <div key={activity.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <div>
+                          <p className="font-semibold text-gray-900 text-sm">{activity.reason}</p>
+                          <p className="text-xs text-gray-500">{new Date(activity.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</p>
+                        </div>
+                        <div className={`font-bold flex items-center gap-1 ${activity.change > 0 ? "text-green-600" : "text-red-600"}`}>
+                           {activity.change > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                           {activity.change > 0 ? "+" : ""}{activity.change}
+                        </div>
+                      </div>
+                    ))
+                 )}
+               </div>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { userService } from "@/lib/userService";
 
 export type VerificationLevel = 1 | 2 | 3 | 4;
 export type ProfileRole = 'owner' | 'agent' | 'builder';
@@ -36,6 +37,10 @@ export interface UserProfile {
   phoneVerified: boolean;
   idVerified: boolean;
   level: VerificationLevel;
+
+  // Trust Score MVP
+  trustScore: number;
+  scoreActivity: Array<{ id: string; reason: string; change: number; timestamp: string }>;
 }
 
 interface AuthContextType {
@@ -65,6 +70,8 @@ const defaultUserProfile: UserProfile = {
   phoneVerified: false,
   idVerified: false,
   level: 1,
+  trustScore: 600,
+  scoreActivity: [],
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -80,16 +87,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userProfile, setUserProfile] = useState<UserProfile>(defaultUserProfile);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       
       if (currentUser) {
-        // Load user profile from local storage tied to UID
-        const savedProfile = localStorage.getItem(`profile_${currentUser.uid}`);
-        if (savedProfile) {
-          setUserProfile(JSON.parse(savedProfile));
+        // 1. Try Firestore first (cross-device, persistent)
+        const firestoreProfile = await userService.loadUserProfile(currentUser.uid);
+        if (firestoreProfile) {
+          setUserProfile(firestoreProfile);
+          // Keep localStorage in sync as local cache
+          localStorage.setItem(`profile_${currentUser.uid}`, JSON.stringify(firestoreProfile));
         } else {
-          setUserProfile(defaultUserProfile);
+          // 2. Fall back to localStorage cache
+          const cachedProfile = localStorage.getItem(`profile_${currentUser.uid}`);
+          if (cachedProfile) {
+            const parsed = JSON.parse(cachedProfile) as UserProfile;
+            setUserProfile(parsed);
+            // Backfill Firestore with the cached data
+            userService.saveUserProfile(currentUser.uid, parsed).catch(console.error);
+          } else {
+            // 3. Brand new user — use defaults
+            setUserProfile(defaultUserProfile);
+          }
         }
       } else {
         setUserProfile(defaultUserProfile);
@@ -121,7 +140,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       newProfile.level = newLevel;
 
       if (user) {
+        // Save to both Firestore and localStorage cache
         localStorage.setItem(`profile_${user.uid}`, JSON.stringify(newProfile));
+        userService.saveUserProfile(user.uid, newProfile).catch(console.error);
       }
       return newProfile;
     });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { ShieldAlert, CheckCircle, ChevronDown, Check } from "lucide-react";
+import { ShieldAlert, CheckCircle, ChevronDown, Check, X } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { propertyService } from "@/lib/propertyService";
@@ -73,6 +73,9 @@ export default function PostPropertyPage() {
     sqft: "",
   });
 
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+
   const [tenantPrefs, setTenantPrefs] = useState({
     sleepSchedule: "any",
     food: "any",
@@ -84,7 +87,26 @@ export default function PostPropertyPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setSelectedImages(prev => [...prev, ...files]);
+      
+      const newPreviews = files.map(file => URL.createObjectURL(file));
+      setImagePreviewUrls(prev => [...prev, ...newPreviews]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviewUrls(prev => {
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +114,7 @@ export default function PostPropertyPage() {
     
     setIsSubmitting(true);
     try {
-      await propertyService.createProperty({
+      const property = await propertyService.createProperty({
         title: formState.title,
         description: `Stunning ${formState.type} property in ${formState.location}`, // Mock description
         rent: parseInt(formState.price) || 0,
@@ -105,6 +127,15 @@ export default function PostPropertyPage() {
         sqft: parseInt(formState.sqft),
         rules: formState.type === 'rent' ? tenantPrefs : undefined,
       });
+
+      // Upload images if any
+      if (selectedImages.length > 0) {
+        for (let i = 0; i < selectedImages.length; i++) {
+          setUploadProgress(Math.round(((i + 1) / selectedImages.length) * 100));
+          await propertyService.uploadImage(property.id, selectedImages[i]);
+        }
+      }
+
       setIsSuccess(true);
     } catch (error) {
       console.error("Submission failed", error);
@@ -278,11 +309,40 @@ export default function PostPropertyPage() {
           </div>
         </div>
 
+        {/* Image Upload Selection */}
+        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            2. Property Images
+          </h2>
+          <div className="flex flex-wrap gap-4 mb-4">
+            {imagePreviewUrls.map((url, idx) => (
+              <div key={idx} className="relative w-32 h-32 rounded-xl overflow-hidden border border-gray-200">
+                <img src={url} alt="Preview" className="w-full h-full object-cover" />
+                <button 
+                  type="button" 
+                  onClick={() => removeImage(idx)}
+                  className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full shadow-md hover:bg-red-600 transition-all"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+            <label className="w-32 h-32 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-[#408A71] hover:bg-green-50/30 transition-all text-gray-400 group">
+              <div className="bg-gray-50 p-2 rounded-full group-hover:bg-green-50 transition-all">
+                <CheckCircle size={20} className="text-gray-400 group-hover:text-[#408A71]" />
+              </div>
+              <span className="text-[10px] uppercase font-bold mt-2 tracking-widest">Add Photos</span>
+              <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageChange} />
+            </label>
+          </div>
+          <p className="text-xs text-gray-400 font-medium">Add up to 10 high-quality photos of the property.</p>
+        </div>
+
         {/* Tenant Preferences (Rent Only) */}
         {formState.type === "rent" && (
           <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
             <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-              2. Ideal Tenant Profile
+              3. Ideal Tenant Profile
             </h2>
             <p className="text-gray-600 text-sm mb-6">
               Establish the rules for this property. Only seekers who match these criteria will score a 100% compatibility rating.
@@ -338,7 +398,12 @@ export default function PostPropertyPage() {
 
         <div className="flex justify-end pt-4">
           <button disabled={isSubmitting} type="submit" className="bg-[#408A71] text-white px-10 py-4 rounded-xl font-bold shadow-lg hover:bg-[#34745c] hover:-translate-y-0.5 transition-all text-lg flex items-center gap-2">
-            {isSubmitting ? "Publishing..." : "Publish Property Listing"}
+            {isSubmitting ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                {uploadProgress > 0 ? `Uploading Images (${uploadProgress}%)...` : "Publishing..."}
+              </>
+            ) : "Publish Property Listing"}
           </button>
         </div>
       </form>

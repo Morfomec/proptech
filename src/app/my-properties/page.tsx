@@ -21,7 +21,9 @@ export default function MyPropertiesPage() {
         tenancyService.getTenanciesByOwner(user.uid)
       ]).then(([propsData, tenanciesData]) => {
           setProperties(propsData);
-          setTenantedProperties(new Set(tenanciesData.map(t => t.property_id)));
+          // Only flag as tenanted if the tenancy is active or pending
+          const activeTenancies = tenanciesData.filter(t => t.status === 'active' || t.status === 'pending');
+          setTenantedProperties(new Set(activeTenancies.map(t => t.property_id)));
         })
         .catch(console.error)
         .finally(() => setIsLoading(false));

@@ -168,13 +168,38 @@ export default function TenanciesDashboard() {
               </div>
               <div className="mt-8">
                 <h4 className="font-bold text-gray-900 mb-2 text-sm uppercase tracking-wider">Payments Overview</h4>
-                <div className="bg-white p-4 rounded-xl shadow-sm flex items-center gap-3 border-l-4 border-amber-500">
-                  <AlertCircle className="text-amber-500 shrink-0" size={24} />
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm">Action Needed</p>
-                    <p className="text-xs text-gray-500">Priya Singh&apos;s payment is pending clearance since 2 days.</p>
-                  </div>
-                </div>
+                {(() => {
+                  const today = new Date();
+                  const overdueList = tenancies.filter(t => {
+                    if (t.status !== 'active') return false;
+                    const dueDay = t.payment_due_day || 1;
+                    return today.getDate() > dueDay;
+                  });
+                  if (overdueList.length === 0) {
+                    return (
+                      <div className="bg-white p-4 rounded-xl shadow-sm flex items-center gap-3 border-l-4 border-green-500">
+                        <CheckCircle2 className="text-green-500 shrink-0" size={24} />
+                        <div>
+                          <p className="font-bold text-gray-900 text-sm">All Up to Date</p>
+                          <p className="text-xs text-gray-500">No overdue payments this month.</p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-2">
+                      {overdueList.map(t => (
+                        <div key={t.id} className="bg-white p-4 rounded-xl shadow-sm flex items-center gap-3 border-l-4 border-amber-500">
+                          <AlertCircle className="text-amber-500 shrink-0" size={24} />
+                          <div>
+                            <p className="font-bold text-gray-900 text-sm">Overdue</p>
+                            <p className="text-xs text-gray-500">{t.tenant_name}&apos;s payment due on {t.payment_due_day}th.</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>

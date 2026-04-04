@@ -1,6 +1,6 @@
 import { db } from './firebase';
 import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where, orderBy, Timestamp } from 'firebase/firestore';
-import { Property } from '../types/models';
+import { Property, PropertyImage } from '../types/models';
 import { IPropertyService } from '../types/services';
 
 const PROPERTIES_COLLECTION = 'properties';
@@ -104,7 +104,35 @@ export const propertyService: IPropertyService = {
     }
   },
 
-  // Stubs for images to satisfy interface
-  uploadImage: async () => { throw new Error("Not implemented"); },
-  getPropertyImages: async () => []
+  // Image upload via Cloudinary
+  uploadImage: async (propertyId: string, file: File): Promise<PropertyImage> => {
+    const { uploadImageToCloudinary } = await import('./cloudinary');
+    const url = await uploadImageToCloudinary(file);
+    
+    const imageObj: PropertyImage = {
+      id: Math.random().toString(36).substring(7),
+      propertyId,
+      imageUrl: url,
+      createdAt: new Date().toISOString()
+    };
+
+    // Store URL on the property document under an 'images' array
+    const docRef = doc(db, PROPERTIES_COLLECTION, propertyId);
+    const { arrayUnion } = await import('firebase/firestore');
+    await updateDoc(docRef, { images: arrayUnion(url) });
+    
+    return imageObj;
+  },
+
+  getPropertyImages: async (propertyId: string): Promise<PropertyImage[]> => {
+    const property = await propertyService.getPropertyById(propertyId);
+    if (!property) return [];
+    const imageUrls = (property as any).images || [];
+    return imageUrls.map((url: string, index: number) => ({
+      id: index.toString(),
+      propertyId,
+      imageUrl: url,
+      createdAt: property.createdAt // Fallback to property creation date
+    }));
+  }
 };

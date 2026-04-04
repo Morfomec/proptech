@@ -5,8 +5,8 @@
  * @returns The secure URL of the uploaded image
  */
 export async function uploadImageToCloudinary(file: File): Promise<string> {
-  const CLOUD_NAME = "defrohr5n";
-  const UPLOAD_PRESET = "krh7lvvc";
+  const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
+  const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
 
   const formData = new FormData();
   formData.append("file", file);

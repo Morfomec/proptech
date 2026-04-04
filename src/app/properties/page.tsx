@@ -70,11 +70,17 @@ export default function PropertiesPage() {
   // Draft filter states
   const [minCompatibility, setMinCompatibility] = useState(0);
   const [bedrooms, setBedrooms] = useState<string | null>(null);
+  const [location, setLocation] = useState("");
+  const [priceRange, setPriceRange] = useState({ min: 5000, max: 100000 });
+  const [selectedTypes, setSelectedTypes] = useState<string[]>(['Apartment']);
 
   // Applied filter states (used for rendering listings)
   const [appliedPrefs, setAppliedPrefs] = useState<UserPreferences>(prefs);
   const [appliedMinCompatibility, setAppliedMinCompatibility] = useState(0);
   const [appliedBedrooms, setAppliedBedrooms] = useState<string | null>(null);
+  const [appliedLocation, setAppliedLocation] = useState("");
+  const [appliedPriceRange, setAppliedPriceRange] = useState({ min: 5000, max: 100000 });
+  const [appliedSelectedTypes, setAppliedSelectedTypes] = useState<string[]>(['Apartment']);
   
   const [visibleCount, setVisibleCount] = useState(4);
   const [dbProperties, setDbProperties] = useState<Property[]>([]);
@@ -87,6 +93,9 @@ export default function PropertiesPage() {
     setAppliedPrefs(prefs);
     setAppliedMinCompatibility(minCompatibility);
     setAppliedBedrooms(bedrooms);
+    setAppliedLocation(location);
+    setAppliedPriceRange(priceRange);
+    setAppliedSelectedTypes(selectedTypes);
     setVisibleCount(4); // Reset pagination on new filter
     if (window.innerWidth < 1024) setIsMobileFilterOpen(false);
   };
@@ -97,6 +106,12 @@ export default function PropertiesPage() {
     setAppliedMinCompatibility(0);
     setBedrooms(null);
     setAppliedBedrooms(null);
+    setLocation("");
+    setAppliedLocation("");
+    setPriceRange({ min: 5000, max: 100000 });
+    setAppliedPriceRange({ min: 5000, max: 100000 });
+    setSelectedTypes(['Apartment']);
+    setAppliedSelectedTypes(['Apartment']);
     setVisibleCount(4);
     
     // Default preferences
@@ -112,21 +127,8 @@ export default function PropertiesPage() {
     setPrefs(defaultPrefs);
     setAppliedPrefs(defaultPrefs);
 
-    // Reset DOM inputs for Location and Price Range
-    const textInputs = document.querySelectorAll('input[type="text"]');
-    textInputs.forEach(el => { (el as HTMLInputElement).value = ''; });
-    
-    const numberInputs = document.querySelectorAll('input[type="number"]');
-    numberInputs.forEach(el => {
-      const input = el as HTMLInputElement;
-      if (input.placeholder === "Min") input.value = "5000";
-      if (input.placeholder === "Max") input.value = "50000";
-    });
-
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach((el, idx) => {
-      (el as HTMLInputElement).checked = (idx === 0);
-    });
+    setPrefs(defaultPrefs);
+    setAppliedPrefs(defaultPrefs);
   };
   
   // Mock property data with rules
@@ -162,6 +164,7 @@ export default function PropertiesPage() {
       isDbQuery: false,
       title: `Modern Serenity Appt ${p.id}`,
       city: "Thondayad Bypass, Kozhikode, Kerala",
+      address: "Thondayad Bypass, Kozhikode, Kerala",
       rent: 12000 + (p.id as number) * 2000,
       salePrice: 4500000 + (p.id as number) * 500000,
       type: "rent",
@@ -179,6 +182,23 @@ export default function PropertiesPage() {
   const displayedProperties = propertiesWithCompat
     .filter(p => listingType !== "rent" || (p.compatibility ?? 0) >= appliedMinCompatibility)
     .filter(p => !appliedBedrooms || (appliedBedrooms === '4+' ? p.bedrooms >= 4 : p.bedrooms === parseInt(appliedBedrooms)))
+    .filter(p => {
+      if (!appliedLocation) return true;
+      const search = appliedLocation.toLowerCase();
+      return (p.city?.toLowerCase().includes(search) || 
+              p.address?.toLowerCase().includes(search) || 
+              p.title?.toLowerCase().includes(search));
+    })
+    .filter(p => {
+      const price = listingType === 'rent' ? p.rent : (p as any).salePrice;
+      return price >= appliedPriceRange.min && price <= appliedPriceRange.max;
+    })
+    .filter(p => {
+      if (appliedSelectedTypes.length === 0) return true;
+      // Match label or DB type string
+      const pType = (p.type || 'Apartment').toLowerCase();
+      return appliedSelectedTypes.some(t => t.toLowerCase() === pType);
+    })
     .sort((a, b) => {
       // Prioritize verified listers (level 3 and 4)
       const aVerified = a.listerLevel >= 3 ? 1 : 0;
@@ -260,6 +280,8 @@ export default function PropertiesPage() {
                   <input 
                     type="text" 
                     placeholder="City, neighborhood..." 
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#408A71] focus:border-transparent outline-none transition-all text-sm font-medium" 
                   />
                 </div>
@@ -274,7 +296,16 @@ export default function PropertiesPage() {
                   {['Apartment', 'House', 'Villa', 'Commercial', 'Flatmate'].map((type) => (
                     <label key={type} className="flex items-center gap-3 cursor-pointer group">
                       <div className="relative flex items-center justify-center w-5 h-5 rounded border-2 border-gray-300 group-hover:border-[#408A71] transition-colors">
-                        <input type="checkbox" className="peer sr-only" defaultChecked={type === 'Apartment'} />
+                        <input 
+                          type="checkbox" 
+                          className="peer sr-only" 
+                          checked={selectedTypes.includes(type)}
+                          onChange={() => {
+                            setSelectedTypes(prev => 
+                              prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+                            );
+                          }}
+                        />
                         <div className="scale-0 peer-checked:scale-100 transition-transform bg-[#408A71] w-full h-full rounded-sm flex items-center justify-center text-white">
                           <Check size={12} strokeWidth={4} />
                         </div>
@@ -344,11 +375,23 @@ export default function PropertiesPage() {
                 <label className="block text-sm font-semibold text-gray-900 mb-3">Price Range (₹)</label>
                 <div className="flex items-center justify-between gap-4 mb-4">
                   <div className="flex-1">
-                    <input type="number" placeholder="Min" defaultValue="5000" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-[#408A71] outline-none" />
+                    <input 
+                      type="number" 
+                      placeholder="Min" 
+                      value={priceRange.min} 
+                      onChange={(e) => setPriceRange({ ...priceRange, min: parseInt(e.target.value) || 0 })}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-[#408A71] outline-none" 
+                    />
                   </div>
                   <span className="text-gray-400 font-medium">-</span>
                   <div className="flex-1">
-                    <input type="number" placeholder="Max" defaultValue="50000" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-[#408A71] outline-none" />
+                    <input 
+                      type="number" 
+                      placeholder="Max" 
+                      value={priceRange.max}
+                      onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || 0 })}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-[#408A71] outline-none" 
+                    />
                   </div>
                 </div>
               </div>
