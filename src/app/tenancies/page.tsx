@@ -356,6 +356,7 @@ export default function TenanciesDashboard() {
     const fetchData = async () => {
       try {
         let fetchedTenancies: Tenancy[] = [];
+        let fetchedProps: Property[] = [];
         
         // If it's the unauthenticated MVP demo, completely skip Firebase network roundtrips for zero latency!
         if (!user?.uid) {
