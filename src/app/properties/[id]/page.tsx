@@ -1,11 +1,11 @@
 "use client";
 
 import { use } from "react";
-import { MapPin, Home, Building, Key, Clock, CheckCircle2, ChevronLeft, Heart, Share2, BadgeCheck, Phone, Mail, FileText } from "lucide-react";
+import { MapPin, Home, Building, Key, Clock, CheckCircle2, ChevronLeft, Heart, Share2, BadgeCheck, Phone, Mail, FileText, Star } from "lucide-react";
 import Link from "next/link";
 import { usePreferences } from "../../../context/PreferencesContext";
 import { getCompatibility } from "../../../utils/compatibility";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth, getVerificationBadge, VerificationLevel, ProfileRole } from "../../../context/AuthContext";
 import { propertyService } from "../../../lib/propertyService";
 import { tenancyService } from "../../../lib/tenancyService";
 import { Property } from "../../../types/models";
@@ -81,26 +81,40 @@ export default function PropertyDetailsPage({ params, searchParams }: { params: 
           </div>
         </div>
 
-        {/* Hero Gallery Placeholder */}
-        <div className="w-full h-[400px] md:h-[500px] bg-gray-200 rounded-3xl mb-10 flex items-center justify-center relative shadow-sm border border-gray-100 overflow-hidden group">
-           <Home size={80} className="text-gray-300 z-10" />
-           <div className="absolute inset-0 bg-gradient-to-tr from-[#408A71]/5 to-transparent"></div>
-           
-           {/* Badges */}
-           <div className="absolute top-6 left-6 flex flex-col gap-3 z-20">
+        {/* Premium Image Gallery */}
+        <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 mb-10 h-[400px] md:h-[500px] rounded-[2rem] overflow-hidden group/gallery relative shadow-sm">
+           {/* Badges Overlay */}
+           <div className="absolute top-6 left-6 flex flex-col gap-3 z-20 pointer-events-none">
               <div className="flex gap-3">
-                <span className="bg-white/95 backdrop-blur-sm text-[#408A71] font-extrabold px-4 py-2 rounded-xl shadow-md tracking-wide uppercase">
+                <span className="bg-white/95 backdrop-blur-sm shadow-xl text-[#408A71] font-extrabold px-4 py-2 rounded-xl tracking-wide uppercase">
                   {(property?.type === 'sale' || (!property && isSale)) ? 'For Sale' : 'For Rent'}
                 </span>
                 {!isSale && compatibility !== null && (
-                  <span className="bg-green-100/95 backdrop-blur-sm text-green-800 font-extrabold px-4 py-2 rounded-xl shadow-md tracking-wide uppercase">
-                    Your compatibility: {compatibility}%
+                  <span className="bg-green-100/95 backdrop-blur-sm shadow-xl text-green-800 font-extrabold px-4 py-2 rounded-xl tracking-wide uppercase">
+                    Your match: {compatibility}%
                   </span>
                 )}
               </div>
-              <span className="bg-gray-900/80 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5 w-max">
-                <Clock size={12} /> Listed 3 days ago
-              </span>
+           </div>
+
+           {/* Main Large Image */}
+           <div className="md:col-span-2 md:row-span-2 relative overflow-hidden bg-gray-200">
+             <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Main Property View" className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+           </div>
+           
+           {/* Side Images */}
+           <div className="hidden md:block relative overflow-hidden bg-gray-200">
+             <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Interior View" className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+           </div>
+           <div className="hidden md:block relative overflow-hidden bg-gray-200">
+             <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Kitchen View" className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+           </div>
+           <div className="hidden md:block md:col-span-2 relative overflow-hidden bg-gray-200 group/more cursor-pointer">
+             <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Living Room View" className="w-full h-full object-cover transition-transform duration-700 group-hover/more:scale-105" />
+             <div className="absolute inset-0 bg-black/40 group-hover/more:bg-black/50 transition-colors flex items-center justify-center">
+                <span className="text-white font-extrabold text-xl tracking-wide flex items-center gap-2">View Full Gallery</span>
+             </div>
            </div>
         </div>
 
@@ -159,13 +173,13 @@ export default function PropertyDetailsPage({ params, searchParams }: { params: 
 
           {/* Right Sidebar */}
           <div className="w-full lg:w-[400px]">
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 sticky top-28">
+            <div className="bg-white p-8 rounded-[2rem] shadow-xl border border-gray-100 sticky top-28 mb-8">
               
               <div className="mb-8">
-                <p className="text-gray-500 font-semibold tracking-wide uppercase text-sm mb-1">
+                <p className="text-gray-500 font-bold tracking-widest uppercase text-xs mb-2">
                   {(property?.type === 'sale' || (!property && isSale)) ? 'Selling Price' : 'Monthly Rent'}
                 </p>
-                <div className="text-4xl font-extrabold text-[#408A71] flex items-end">
+                <div className="text-4xl font-black text-[#408A71] flex items-end tracking-tight">
                   {(property?.type === 'sale' || (!property && isSale)) ? (
                     <>₹{((property as any)?.salePrice || (property?.rent || 10000) * 400 || 4500000 + numId * 500000).toLocaleString()}</>
                   ) : (
@@ -175,41 +189,49 @@ export default function PropertyDetailsPage({ params, searchParams }: { params: 
               </div>
 
               {/* Lister Information */}
-              <Link href={`/profile/${isOwner ? 'owner123' : 'agent456'}`} className={`block p-5 rounded-2xl mb-8 border transition-all hover:shadow-md hover:-translate-y-1 ${isOwner ? 'bg-amber-50 border-amber-100' : 'bg-blue-50 border-blue-100'}`}>
+              <Link href={`/profile/${isOwner ? 'owner123' : 'agent456'}`} className={`block p-6 rounded-2xl mb-8 border transition-all hover:shadow-lg hover:-translate-y-1 ${isOwner ? 'bg-amber-50/50 border-amber-200' : 'bg-blue-50/50 border-blue-200'}`}>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className={`text-xs font-bold uppercase tracking-wider ${isOwner ? 'text-amber-600' : 'text-blue-600'}`}>
+                    <p className={`text-xs font-black uppercase tracking-widest ${isOwner ? 'text-amber-600' : 'text-blue-600'}`}>
                       Listed By {isOwner ? 'Owner' : 'Verified Agent'}
                     </p>
                   </div>
-                  {isOwner ? null : <BadgeCheck size={20} className="text-blue-500" />}
+                  {isOwner ? null : <BadgeCheck size={20} className="text-blue-600 drop-shadow-sm" />}
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center font-bold text-gray-400 text-xl">
-                    {isOwner ? 'O' : 'A'}
+                <div className="flex items-start gap-4">
+                  <div className="w-16 h-16 shrink-0 rounded-full bg-white border-2 hover:border-[#408A71] transition-colors shadow-md overflow-hidden flex items-center justify-center font-bold text-gray-400 text-2xl">
+                    <img src={isOwner ? "https://ui-avatars.com/api/?name=P+L&background=fef3c7&color=d97706" : "https://ui-avatars.com/api/?name=P+R&background=eff6ff&color=2563eb"} alt="Avatar" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 text-lg group-hover:underline">{isOwner ? 'Private Landlord' : 'Proptech Reality Cop.'}</p>
-                    <p className="text-sm font-medium text-gray-500">{isOwner ? 'No brokerage fees' : 'Trusted Partner'}</p>
+                    <p className="font-extrabold text-gray-900 text-xl group-hover:underline leading-tight mb-1">{isOwner ? 'Private Landlord' : 'Proptech Reality'}</p>
+                    <p className="text-sm font-semibold text-gray-500 mb-3">{isOwner ? 'No brokerage fees' : 'Trusted Partner'}</p>
+                    <div className="flex flex-col gap-2">
+                      <div className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider w-max ${getVerificationBadge(((property as any)?.listerLevel || (isOwner ? 3 : 4)) as VerificationLevel, ((property as any)?.role || (isOwner ? 'owner' : 'agent')) as ProfileRole).bg}`}>
+                          <span>{getVerificationBadge(((property as any)?.listerLevel || (isOwner ? 3 : 4)) as VerificationLevel, ((property as any)?.role || (isOwner ? 'owner' : 'agent')) as ProfileRole).icon}</span> {getVerificationBadge(((property as any)?.listerLevel || (isOwner ? 3 : 4)) as VerificationLevel, ((property as any)?.role || (isOwner ? 'owner' : 'agent')) as ProfileRole).label}
+                      </div>
+                      <div className="inline-flex items-center gap-1.5 bg-gray-900 text-white shadow-md text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider w-max">
+                         <Star size={12} className="text-yellow-400 fill-yellow-400" /> Trust Score: {(property as any)?.listerLevel ? ((property as any).listerLevel >= 3 ? '850' : '550') : (isOwner ? '850' : '920')}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Link>
 
               {/* Contact Actions */}
               <div className="flex flex-col gap-3">
-                <button className="w-full bg-[#408A71] hover:bg-[#34745c] text-white font-bold py-4 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
-                  <Mail size={20} /> Request Details
+                <button className="w-full bg-[#408A71] hover:bg-[#34745c] text-white font-extrabold py-4 rounded-xl shadow-lg shadow-[#408A71]/30 transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
+                  <Mail size={22} /> Request Details
                 </button>
-                <button className="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 font-bold py-4 rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
-                  <Phone size={20} /> Show Phone Number
+                <button className="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 font-extrabold py-4 rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
+                  <Phone size={22} /> Show Phone Number
                 </button>
               </div>
 
               {/* Owner Actions */}
               {userProfile && ['owner', 'agent', 'builder'].includes(userProfile.role) && (
                 <div className="mt-8 border-t border-gray-100 pt-8">
-                  <h3 className="text-sm font-bold tracking-wider text-gray-500 uppercase mb-4">Property Management</h3>
+                  <h3 className="text-xs font-black tracking-widest text-gray-400 uppercase mb-4">Property Management</h3>
                   {hasTenancy ? (
                     <Link href="/tenancies" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
                       <FileText size={20} /> Manage Tenancy
@@ -219,7 +241,7 @@ export default function PropertyDetailsPage({ params, searchParams }: { params: 
                       <FileText size={20} /> Create Tenancy
                     </Link>
                   )}
-                  <p className="text-xs text-gray-400 mt-3 text-center">Digitally manage your tenant, payments, and agreements.</p>
+                  <p className="text-xs font-medium text-gray-400 mt-3 text-center">Digitally manage your tenant, payments, and agreements.</p>
                 </div>
               )}
 

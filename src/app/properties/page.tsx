@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { MapPin, Home, Building, Key, Clock, Filter, ChevronDown, SlidersHorizontal, Check, Settings2, X, BadgeCheck } from "lucide-react";
+import { MapPin, Home, Building, Key, Clock, Filter, ChevronDown, SlidersHorizontal, Check, Settings2, X, BadgeCheck, Star } from "lucide-react";
 import { getCompatibility, UserPreferences } from "../../utils/compatibility";
 import { usePreferences } from "../../context/PreferencesContext";
+import { getVerificationBadge, VerificationLevel, ProfileRole } from "../../context/AuthContext";
 import { propertyService } from "@/lib/propertyService";
 import { Property } from "@/types/models";
 
@@ -196,7 +197,7 @@ export default function PropertiesPage() {
     .filter(p => {
       if (appliedSelectedTypes.length === 0) return true;
       // Match label or DB type string
-      const pType = (p.type || 'Apartment').toLowerCase();
+      const pType = ((p as any).propertyType || 'Apartment').toLowerCase();
       return appliedSelectedTypes.some(t => t.toLowerCase() === pType);
     })
     .sort((a, b) => {
@@ -223,7 +224,7 @@ export default function PropertiesPage() {
         <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Explore Properties</h1>
-            <p className="text-gray-500 mt-2 text-lg">Find your perfect home from our curated selection.</p>
+            <p className="text-gray-500 mt-2 text-lg">Choose with confidence using verified trust scores.</p>
           </div>
           
           {/* Buy / Rent Toggle */}
@@ -498,18 +499,12 @@ export default function PropertiesPage() {
 
                       {/* Verification Badges */}
                       <div className="flex flex-wrap gap-2 mb-2">
-                        {property.listerLevel === 4 && (
-                          <div className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                            <BadgeCheck size={12} /> Trusted Agent
-                          </div>
-                        )}
-                        {property.listerLevel === 3 && (
-                          <div className="inline-flex items-center gap-1 bg-green-50 text-[#408A71] text-[10px] font-bold px-2 py-0.5 rounded border border-green-100 uppercase tracking-wider">
-                            <Check size={12} /> ID Verified Owner
-                          </div>
-                        )}
-                        {/* Fallback space for layout consistency if no badge */}
-                        {property.listerLevel < 3 && <div className="h-5" />}
+                        <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${getVerificationBadge((property as any).listerLevel as VerificationLevel, ((property as any).role || 'owner') as ProfileRole).bg}`}>
+                          <span>{getVerificationBadge((property as any).listerLevel as VerificationLevel, ((property as any).role || 'owner') as ProfileRole).icon}</span> {getVerificationBadge((property as any).listerLevel as VerificationLevel, ((property as any).role || 'owner') as ProfileRole).label}
+                        </div>
+                        <div className="inline-flex items-center gap-1 bg-yellow-50 text-yellow-700 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-100 uppercase tracking-wider">
+                            <Star size={12} className="text-yellow-500" /> Trust Score: {(property as any).listerLevel >= 3 ? '850' : '550'}
+                        </div>
                       </div>
                     </div>
                     

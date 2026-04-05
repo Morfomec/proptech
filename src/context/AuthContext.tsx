@@ -6,7 +6,15 @@ import { auth } from "@/lib/firebase";
 import { userService } from "@/lib/userService";
 
 export type VerificationLevel = 1 | 2 | 3 | 4;
-export type ProfileRole = 'owner' | 'agent' | 'builder';
+export type ProfileRole = 'tenant' | 'owner' | 'agent' | 'builder';
+
+export const getVerificationBadge = (level: VerificationLevel, role: ProfileRole) => {
+  if (level === 1) return { label: "Unverified", icon: "⚠️", bg: "bg-red-50 text-red-700 border-red-100" };
+  if (level === 2) return { label: "Phone Verified", icon: "📱", bg: "bg-orange-50 text-orange-700 border-orange-100" };
+  if (level >= 3 && role !== 'agent' && role !== 'builder') return { label: "Verified", icon: "✅", bg: "bg-green-50 text-[#408A71] border-green-100" };
+  if (level >= 3 && (role === 'agent' || role === 'builder')) return { label: "Business Verified", icon: "🏢", bg: "bg-blue-50 text-blue-700 border-blue-100" };
+  return { label: "Unverified", icon: "⚠️", bg: "bg-red-50 text-red-700 border-red-100" };
+};
 
 export interface UserProfile {
   role: ProfileRole;
@@ -41,6 +49,7 @@ export interface UserProfile {
   // Trust Score MVP
   trustScore: number;
   scoreActivity: Array<{ id: string; reason: string; change: number; timestamp: string }>;
+  onTimeStreak: number;
 }
 
 interface AuthContextType {
@@ -51,7 +60,7 @@ interface AuthContextType {
 }
 
 const defaultUserProfile: UserProfile = {
-  role: 'owner',
+  role: 'tenant',
   name: "",
   email: "",
   phone: "",
@@ -70,8 +79,9 @@ const defaultUserProfile: UserProfile = {
   phoneVerified: false,
   idVerified: false,
   level: 1,
-  trustScore: 600,
+  trustScore: 550,
   scoreActivity: [],
+  onTimeStreak: 0,
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -124,10 +134,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const newProfile = { ...prev, ...updates };
       // Calculate new level dynamically
       let newLevel: VerificationLevel = 1;
+      let newScore = newProfile.trustScore ?? 550;
 
       if (newProfile.role === 'owner') {
         if (newProfile.phoneVerified) newLevel = 2;
         if (newProfile.phoneVerified && (newProfile.idVerified || newProfile.propertyProofVerified)) newLevel = 3;
+      } else if (newProfile.role === 'tenant') {
+        if (newProfile.phoneVerified) newLevel = 2;
+        if (newProfile.phoneVerified && newProfile.idVerified) newLevel = 3;
       } else if (newProfile.role === 'agent') {
         if (newProfile.phoneVerified) newLevel = 2;
         if (newProfile.phoneVerified && newProfile.idVerified) newLevel = 3;
@@ -137,7 +151,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (newProfile.phoneVerified && (newProfile.companyProofVerified || newProfile.reraVerified)) newLevel = 4;
       }
 
+      // Verification bump intercept
+      if (newLevel === 2 && newScore < 580) {
+        newScore = 580;
+      } else if (newLevel >= 3 && newScore < 600) {
+        newScore = 600;
+      }
+
       newProfile.level = newLevel;
+      newProfile.trustScore = newScore;
 
       if (user) {
         // Save to both Firestore and localStorage cache

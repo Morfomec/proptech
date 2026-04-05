@@ -61,7 +61,7 @@ const CustomSelect = ({ label, options, value, onChange }: { label: string, opti
 
 export default function PostPropertyPage() {
   const { user, userProfile } = useAuth();
-  const [activeListings] = useState(0); // Mocking active listings
+  const [activeListings] = useState(2); // Mocking active listings to demonstrate verification guard
 
   const [formState, setFormState] = useState({
     title: "",
@@ -176,7 +176,7 @@ export default function PostPropertyPage() {
           </div>
           <h1 className="text-3xl font-extrabold text-gray-900 mb-4">Listing Limit Reached</h1>
           <p className="text-gray-600 text-lg mb-8 max-w-xl mx-auto">
-            As an Individual Owner, you can only have 2 active listings at a time. To unlock <strong className="text-gray-900 font-black">unlimited listings</strong>, please verify your Government ID or Property Proof.
+            Verify to unlock more listings and build trust with your tenants.
           </p>
           <div className="flex justify-center gap-4">
             <Link href="/profile" className="bg-[#408A71] text-white px-8 py-3.5 rounded-full font-bold shadow-md hover:bg-[#34745c] transition-transform active:scale-95">

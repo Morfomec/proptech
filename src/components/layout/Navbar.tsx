@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, Menu, X, ArrowRight, ChevronDown, LogOut, Settings, User as UserIcon } from "lucide-react";
+import { Building2, Menu, X, ArrowRight, ChevronDown, LogOut, Settings, User as UserIcon, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { auth } from "@/lib/firebase";
@@ -12,7 +12,9 @@ import { useAuth } from "@/context/AuthContext";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/properties", label: "Properties" },
-  { href: "/about", label: "About Us" },
+  { href: "/verification", label: "Verification & Trust" },
+  { href: "/tenancies", label: "Tenancies" },
+  { href: "/product-journey", label: "Product Journey" },
 ];
 
 export default function Navbar() {
@@ -47,9 +49,8 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors relative ${
-                  isActive ? "text-[#408A71]" : "text-gray-600 hover:text-gray-900"
-                }`}
+                className={`text-sm font-medium transition-colors relative ${isActive ? "text-[#408A71]" : "text-gray-600 hover:text-gray-900"
+                  }`}
               >
                 {link.label}
                 {isActive && (
@@ -68,68 +69,76 @@ export default function Navbar() {
           <Link href="/post" className="text-sm font-bold text-[#408A71] bg-white hover:bg-gray-50 px-5 py-2.5 rounded-full transition-colors border border-gray-200 shadow-sm">
             List Property
           </Link>
-            <div className="relative">
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full border border-gray-200"
-              >
-                {user?.photoURL ? (
-                  <img src={user.photoURL} alt="Profile" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
-                ) : (
-                  <UserIcon size={18} className="text-[#408A71]" />
-                )}
-                <span>{user?.displayName || user?.email?.split('@')[0] || "Demo User"}</span>
-                <ChevronDown size={16} className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
-              </button>
+          <div className="relative">
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full border border-gray-200"
+            >
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt="Profile" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
+              ) : (
+                <UserIcon size={18} className="text-[#408A71]" />
+              )}
+              <span>{user?.displayName || user?.email?.split('@')[0] || "Demo User"}</span>
+              <ChevronDown size={16} className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
+            </button>
 
-              <AnimatePresence>
-                {dropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-12 right-0 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-2 flex flex-col z-50"
+            <AnimatePresence>
+              {dropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-12 right-0 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-2 flex flex-col z-50"
+                >
+                  <Link
+                    href="/my-properties"
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#408A71] transition-colors"
+                    onClick={() => setDropdownOpen(false)}
                   >
-                    <Link
-                      href="/my-properties"
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#408A71] transition-colors"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <Building2 size={16} />
-                      My Properties
-                    </Link>
-                    <Link
-                      href="/profile"
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#408A71] transition-colors"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <UserIcon size={16} />
-                      Profile
-                    </Link>
-                    <Link
-                      href="/settings"
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#408A71] transition-colors"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <Settings size={16} />
-                      Settings
-                    </Link>
-                    {user && (
-                      <>
-                        <hr className="my-1 border-gray-100" />
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
-                        >
-                          <LogOut size={16} />
-                          Log Out
-                        </button>
-                      </>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                    <Building2 size={16} />
+                    My Properties
+                  </Link>
+                  <Link
+                    href="/tenancies"
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#408A71] transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <ShieldCheck size={16} />
+                    Tenancies
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#408A71] transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <UserIcon size={16} />
+                    Profile
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#408A71] transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </Link>
+                  {user && (
+                    <>
+                      <hr className="my-1 border-gray-100" />
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                      >
+                        <LogOut size={16} />
+                        Log Out
+                      </button>
+                    </>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Mobile Toggle */}
@@ -176,24 +185,23 @@ export default function Navbar() {
                   </div>
                 </div>
               )}
-            
+
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`text-lg font-medium p-3 rounded-lg transition-colors ${
-                    pathname === link.href
+                  className={`text-lg font-medium p-3 rounded-lg transition-colors ${pathname === link.href
                       ? "bg-green-50 text-[#408A71]"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </Link>
               ))}
-              
+
               <hr className="border-gray-100 my-2" />
-              
+
               <Link
                 href="/post"
                 onClick={() => setIsOpen(false)}
@@ -209,6 +217,14 @@ export default function Navbar() {
               >
                 <Building2 size={20} />
                 My Properties
+              </Link>
+              <Link
+                href="/tenancies"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 text-lg font-medium p-3 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <ShieldCheck size={20} />
+                Tenancies
               </Link>
               <Link
                 href="/profile"

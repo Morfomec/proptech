@@ -26,6 +26,8 @@ export interface Property {
   baths?: number;
   sqft?: number;
   rules?: any;
+  listerLevel?: number;
+  role?: string;
 }
 
 export interface PropertyImage {
