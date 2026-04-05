@@ -39,7 +39,9 @@ const TenantDashboard = ({ tenancies, propertyMap, loading, trustScore }: { tena
           </div>
         ) : (
           tenancies.map((tenancy) => {
-            const isRenewalNeeded = new Date(tenancy.end_date || 0) < new Date(today.setMonth(today.getMonth() + 1));
+            const renewalThreshold = new Date();
+            renewalThreshold.setMonth(renewalThreshold.getMonth() + 1);
+            const isRenewalNeeded = new Date(tenancy.end_date || 0) < renewalThreshold;
             return (
               <div key={tenancy.id} className={`bg-white rounded-3xl p-6 shadow-sm border transition-shadow ${isRenewalNeeded ? 'border-amber-200 ring-2 ring-amber-50' : 'border-gray-100 hover:shadow-md'}`}>
                 <div className="flex justify-between items-start mb-6">
@@ -338,7 +340,7 @@ const OwnerDashboard = ({ tenancies, propertyMap, loading }: { tenancies: Tenanc
 
 // --- Main Page Component ---
 export default function TenanciesDashboard() {
-  const { userProfile, user } = useAuth();
+  const { userProfile, user, loading: authLoading } = useAuth();
   
   const [tenancies, setTenancies] = useState<Tenancy[]>([]);
   const [propertyMap, setPropertyMap] = useState<Record<string, Property>>({});
@@ -378,11 +380,26 @@ export default function TenanciesDashboard() {
     }
   }, [user, userProfile, isTenant]);
 
-  if (!user || !userProfile) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 pt-32 pb-20 flex flex-col items-center justify-center">
         <Loader2 className="animate-spin text-[#408A71] mb-4" size={48} />
         <p className="text-gray-500 font-semibold">Authenticating...</p>
+      </div>
+    );
+  }
+
+  if (!user || !userProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-32 pb-20 flex flex-col items-center justify-center text-center px-4">
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-md w-full">
+          <ShieldCheck className="mx-auto text-gray-300 mb-4" size={64} />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h2>
+          <p className="text-gray-500 mb-6">Please log in to view your tenancy dashboard.</p>
+          <Link href="/login" className="block w-full bg-[#408A71] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#34745c] transition-colors">
+            Log In
+          </Link>
+        </div>
       </div>
     );
   }
