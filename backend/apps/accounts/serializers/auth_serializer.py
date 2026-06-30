@@ -14,10 +14,18 @@ class RegisterSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         value = User.objects.normalize_email(value)
-        
+
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
                 "A user with this email already exists."
             )
 
         return value
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+    )

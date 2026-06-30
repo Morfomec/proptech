@@ -3,9 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
-from apps.accounts.serializers.auth_serializer import RegisterSerializer
+from apps.accounts.serializers.auth_serializer import (RegisterSerializer, LoginSerializer)
 from apps.accounts.services.auth_service import AuthService
-
 
 
 class RegisterAPIView(APIView):
@@ -22,3 +21,17 @@ class RegisterAPIView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
+
+class LoginAPIView(APIView):
+    """Authenticate a user and return JWT tokens."""
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        login_data = AuthService.login_user(serializer.validated_data)
+
+        return Response(
+            {"message": "Login successful.", **login_data,},
+            status=status.HTTP_200_OK,
+        )
