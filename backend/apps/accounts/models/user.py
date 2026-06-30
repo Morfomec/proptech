@@ -7,15 +7,15 @@ from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
-    """ creating custom manager for the user model."""
+    """ Custom manager for the user model."""
 
     def create_user(self, email, password=None, **extra_fields):
         
-        email = email.strip()
 
         if not email:
             raise ValueError("Email address is required.")
 
+        email = email.strip()
         email = self.normalize_email(email)
         
         user = self.model(email=email, **extra_fields)
@@ -60,3 +60,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
+    class Meta:
+        db_table = "users"
+        ordering = ["-date_joined"]
+        verbose_name = "User"
+        verbose_name_plural = "Users"
