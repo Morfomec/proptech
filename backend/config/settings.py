@@ -42,7 +42,7 @@ INSTALLED_APPS = [
 
     #Third Party Apps
     "rest_framework",
-    "coresheaders",
+    "corsheaders",
 
     #Local Apps
     "apps.accounts",
@@ -135,7 +135,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Media files
 
-MEDIA_URL = "/media"
+MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
@@ -157,3 +157,6 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
+
+
+AUTH_USER_MODEL = "accounts.User"
