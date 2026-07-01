@@ -168,4 +168,11 @@ SIMPLE_JWT = {
 }
 
 
+APP_NAME = config("APP_NAME")
+FRONTEND_URL = config("FRONTEND_URL")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+SUPPORT_EMAIL = config("SUPPORT_EMAIL")
+
 AUTH_USER_MODEL = "accounts.User"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+

@@ -2,8 +2,16 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from django.contrib.auth import authenticate
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from django.conf import settings
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from .email_service import EmailService
+
+
 
 User = get_user_model()
 
@@ -11,12 +19,77 @@ class AuthService:
     """Business logic for authentication"""
 
 
+
+# Regsitration ----------------------------------------------
+
+
+
     @staticmethod
     @transaction.atomic
     def register_user(validated_data):
+        validated_data.pop("confirm_password")
         user = User.objects.create_user(**validated_data)
 
+        AuthService.send_verification_email(user)
+
         return user
+
+    
+    
+    @staticmethod
+    def send_verification_email(user):
+        
+        token = PasswordResetTokenGenerator().make_token(user)
+
+        uid = urlsafe_base64_encode(
+            force_bytes(user.pk)
+        )
+
+        verification_url = (
+            f"{settings.FRONTEND_URL}"
+            f"/verify-email/{uid}/{token}"
+        )
+
+        EmailService.send_verification_email(
+            user=user,
+            verification_url=verification_url,
+        )
+
+
+
+
+    @staticmethod
+    def verify_email(validated_data):
+
+        uid = validated_data["uid"]
+        token = validated_data["token"]
+
+
+        try:
+            user_id = force_str(
+                urlsafe_base64_decode(uid)
+            )
+
+            user = User.objects.get(pk=user_id)
+
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist,):
+            raise ValidationError(
+                "Invalid verification link."
+            )
+
+        if user.email_verified:
+            raise ValidationError("Email is already verified.")
+
+
+        user.email_verified = True
+
+        user.save(update_fields=["email_verified"])
+
+
+
+# Authentication ------------------------------------------------
+
+
 
 
     @staticmethod
@@ -45,3 +118,80 @@ class AuthService:
                 "refresh": str(refresh),
             },
         }
+
+    @staticmethod
+    def logout_user(validated_data):
+        refresh_token = validated_data["refresh"]
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+        except Exception:
+            raise ValidationError(
+                "Invalid or expired refresh token."
+            )
+
+
+
+
+
+
+# Password Reset ---------------------------------------------
+
+
+
+
+    @staticmethod
+    def forgot_password(validated_data):
+        email = validated_data["email"]
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return
+        
+        token = PasswordResetTokenGenerator().make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+        reset_url = (
+            f"{settings.FRONTEND_URL}"
+            f"/reset-password/{uid}/{token}"
+        )
+
+
+        EmailService.send_password_reset_email(
+            user=user,
+            reset_url=reset_url,
+        )
+
+    @staticmethod
+    def reset_password(validated_data):
+        uid = validated_data["uid"]
+        token = validated_data["token"]
+        password = validated_data["password"]
+
+
+        try:
+            user_id = force_str(
+                urlsafe_base64_decode(uid)
+            )
+
+            user = User.objects.get(pk=user_id)
+
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            raise ValidationError(
+                "Invalid reset link."
+            )
+
+        if not PasswordResetTokenGenerator().check_token(
+            user, token,
+        ):
+            raise ValidationError(
+                "Invalid or expired reset token."
+            )
+
+        user.set_password(password)
+        user.save()
+
+

@@ -15,6 +15,9 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError("Email address is required.")
 
+        if not password:
+            raise ValueError("Password is required.")
+
         email = email.strip()
         email = self.normalize_email(email)
         
@@ -47,11 +50,18 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=15, unique=True, blank=True, null=True, default=None)
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
+    profile_image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    date_joined = models.DateTimeField(default=timezone.now)
+    # account_verified = models.BooleanField(default=False)
+    # date_joined = models.DateTimeField(default=timezone.now)
+    email_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
     objects = UserManager()
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -62,6 +72,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = "users"
-        ordering = ["-date_joined"]
+        ordering = ["-created_at"]
         verbose_name = "User"
         verbose_name_plural = "Users"
