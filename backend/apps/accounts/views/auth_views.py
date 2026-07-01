@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 
 
 from apps.accounts.serializers.auth_serializer import (RegisterSerializer, LoginSerializer, UserSerializer, LogoutSerializer, ForgotPasswordSerializer,          
-ResetPasswordSerializer, VerifyEmailSerializer
+ResetPasswordSerializer, VerifyEmailSerializer, ResendVerificationSerializer,
 )
 from apps.accounts.services.auth_service import AuthService
 from rest_framework.permissions import IsAuthenticated
@@ -17,7 +17,7 @@ class RegisterAPIView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = AuthService.register_user(serializer.validated_data)
+        AuthService.register_user(serializer.validated_data)
 
         return Response(
             {"message": "User registered successfully."},
@@ -42,7 +42,7 @@ class LoginAPIView(APIView):
 class CurrentUserAPIView(APIView):
     """Return the authenticated user;s details."""
 
-    permissions_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         serializer = UserSerializer(request.user)
@@ -52,7 +52,7 @@ class CurrentUserAPIView(APIView):
 class LogoutAPIView(APIView):
     """Logout user by blacklisting the refresh token."""
 
-    permissions_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = LogoutSerializer(data=request.data)
@@ -73,7 +73,7 @@ class ForgotPasswordAPIView(APIView):
         serializer = ForgotPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        AuthService.forgot_passowrd(serializer.validated_data)
+        AuthService.forgot_password(serializer.validated_data)
 
         return Response(
             {"message":(
@@ -99,7 +99,7 @@ class ResetPasswordAPIView(APIView):
 
 
 
-class verifyEmailAPIView(APIView):
+class VerifyEmailAPIView(APIView):
     """Verify user's email address."""
 
     def post(self, request):
@@ -111,4 +111,22 @@ class verifyEmailAPIView(APIView):
 
         return Response(
             {"message": "Email verified successfully."}, status=status.HTTP_200_OK,
+        )
+
+
+
+class ResendVerificationAPIView(APIView):
+    """Resend verification email."""
+
+
+    def post(self, request):
+        serializer = ResendVerificationSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        AuthService.resend_verification_email(serializer.validated_data)
+
+
+        return Response(
+            {"message": "Verification email sent  successfully."}, status=status.HTTP_200_OK,
         )

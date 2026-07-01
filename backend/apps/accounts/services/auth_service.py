@@ -56,6 +56,23 @@ class AuthService:
         )
 
 
+    @staticmethod
+    def resend_verification_email(validated_data):
+        email = validated_data["email"]
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise ValidationError(
+                {"email": "User not found."}
+            )
+
+        if user.email_verified:
+            raise ValidationError(
+                {"email": "Email is already verified."}
+            )
+
+        AuthService.send_verification_email(user)
 
 
     @staticmethod
@@ -74,11 +91,22 @@ class AuthService:
 
         except (TypeError, ValueError, OverflowError, User.DoesNotExist,):
             raise ValidationError(
-                "Invalid verification link."
+                {"token": "Invalid verification link."}
+            )
+
+        if not PasswordResetTokenGenerator().check_token(
+            user, token,
+        ):
+            raise ValidationError(
+                {"token": "Invalid verification link."}
             )
 
         if user.email_verified:
-            raise ValidationError("Email is already verified.")
+            raise ValidationError(
+                {
+                    "email": "Email is already verified."
+                }
+            )
 
 
         user.email_verified = True

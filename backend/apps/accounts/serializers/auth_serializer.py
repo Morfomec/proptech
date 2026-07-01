@@ -107,3 +107,7 @@ class VerifyEmailSerializer(serializers.Serializer):
     uid = serializers.CharField()
 
     token = serializers.CharField()
+
+
+class ResendVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
