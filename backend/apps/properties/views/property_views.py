@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.properties.serializers.property_serializer import (
-    PropertyDetailSerializer, PropertyWriteSerializer,
+    PropertyDetailSerializer, PropertyWriteSerializer, PropertyListSerializer
 )
 from apps.properties.services.property_service import PropertyService
 
@@ -26,7 +26,7 @@ class PropertyCreateAPIView(GenericAPIView):
     def post(self, request, *args, **kwargs):
         """ Create a new property for the authenicated user."""
 
-        
+
         serializer = self.get_serializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -39,4 +39,24 @@ class PropertyCreateAPIView(GenericAPIView):
 
         return Response(
             response_serializer.data, status=status.HTTP_201_CREATED,
+        )
+
+
+class MyPropertyListAPIView(GenericAPIView):
+    """List properties owned by the authenticated user."""
+
+    serializer_class = PropertyListSerializer
+    permission_classes = [IsAuthenticated]
+
+
+    def get(self, request, *args, **kwargs):
+
+        queryset = PropertyService.get_user_properties(
+            owner=request.user,
+        )
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response(
+            serializer.data
         )

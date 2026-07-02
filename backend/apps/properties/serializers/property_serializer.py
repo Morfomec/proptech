@@ -68,3 +68,19 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
 
         read_only_fields = fields
         
+
+class PropertyListSerializer(serializers.ModelSerializer):
+    """Serializer for listing properties."""
+
+    class Meta:
+        model = Property
+
+        fields = (
+            "uuid",
+            "title",
+            "property_type",
+            "property_category",
+            "status",
+        )
+
+        read_only_fields = fields
