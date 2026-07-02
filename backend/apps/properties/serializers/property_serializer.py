@@ -39,3 +39,32 @@ class PropertyWriteSerializer(serializers.ModelSerializer):
             "construction_status",
             "address",
         )
+
+
+
+class PropertyDetailSerializer(serializers.ModelSerializer):
+    """Serializer for retrieving detailed property information."""
+
+
+    address = PropertyAddressSerializer(read_only=True)
+
+    class Meta:
+        model = Property
+        
+        fields = (
+            "uuid",
+            "property_type",
+            "property_category",
+            "title",
+            "description",
+            "total_units",
+            "total_floors",
+            "construction_status",
+            "status",
+            "address",
+            "created_at",
+            "updated_at",
+        )
+
+        read_only_fields = fields
+        
