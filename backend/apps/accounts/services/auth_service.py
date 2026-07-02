@@ -10,7 +10,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from .email_service import EmailService
-
+from apps.accounts.models import (User, UserProfile, UserAddress, UserRole, Role)
 
 
 User = get_user_model()
@@ -28,12 +28,24 @@ class AuthService:
     @transaction.atomic
     def register_user(validated_data):
         validated_data.pop("confirm_password")
+
         user = User.objects.create_user(**validated_data)
 
+        AuthService._initialize_user(user)
+        
         AuthService.send_verification_email(user)
 
         return user
 
+    #an help methode to make the register_user method light and simplified
+    @staticmethod
+    def _initialize_user(user):
+        """Creat default resources for a newly registered user."""
+
+        UserProfile.objects.create(user=user)
+        UserAddress.objects.create(user=user)
+        tenant_role = Role.objects.get(name=Role.RoleChoices.TENANT)
+        UserRole.objects.create(user=user, role=tenant_role)
     
     
     @staticmethod

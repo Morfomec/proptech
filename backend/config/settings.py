@@ -167,6 +167,7 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
 }
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 APP_NAME = config("APP_NAME")
 FRONTEND_URL = config("FRONTEND_URL")
