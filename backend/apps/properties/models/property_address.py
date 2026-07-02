@@ -2,7 +2,7 @@ from django.db import models
 
 
 from apps.common.models import BaseModel
-from app.properties.models.property import Property
+from apps.properties.models.property import Property
 
 
 class PropertyAddress(BaseModel):

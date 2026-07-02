@@ -1,4 +1,4 @@
-from .base_model improt BaseModel
+from .base_model import BaseModel
 
 __all__ = [
     "BaseModel",
