@@ -64,10 +64,42 @@ class MyPropertyListAPIView(GenericAPIView):
         )
 
 
-class PropertyDetailAPIView(GenericAPIView):
-    """Retrieve a property owner by the authenticated user."""
+# class PropertyDetailAPIView(GenericAPIView):
+#     """Retrieve a property owner by the authenticated user."""
 
-    permissions_classes = [IsAuthenticated]
+#     permissions_classes = [IsAuthenticated]
+
+#     def get(self, request, property_uuid, *args, **kwargs):
+#         try:
+#             property_obj = PropertyService.get_property(
+#                 owner=request.user,
+#                 property_uuid=property_uuid,
+#             )
+
+#         except ObjectDoesNotExist:
+            
+#             return Response(
+#                 {"detail": "Property not found."},
+#                 status=status.HTTP_404_NOT_FOUND,
+#             )
+
+#         serializer = PropertyDetailSerializer(property_obj)
+
+#         return Response(serializer.data)
+
+
+class PropertyRetrieveUpdateAPIView(GenericAPIView):
+    """Retrieve or update a property owned by the authenticated user."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+
+        if self.request.method in ("PATCH", "PUT"):
+            return PropertyWriteSerializer
+
+        return PropertyDetailSerializer
+
 
     def get(self, request, property_uuid, *args, **kwargs):
         try:
@@ -86,3 +118,88 @@ class PropertyDetailAPIView(GenericAPIView):
         serializer = PropertyDetailSerializer(property_obj)
 
         return Response(serializer.data)
+
+
+    def patch(self, request, property_uuid, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data, partial=True,
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            property_obj = PropertyService.update_property(
+                owner=request.user,
+                property_uuid=property_uuid,
+                validated_data=serializer.validated_data,
+            )
+
+        except ObjectDoesNotExist:
+
+            return Response(
+                {
+                    "detail": "Property not found."
+                }, status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            PropertyDetailSerializer(property_obj).data,
+            status=status.HTTP_200_OK,
+        )
+
+
+    def delete(self, request, property_uuid, *args, **kwargs):
+
+        try:
+            PropertyService.delete_property(
+                owner=request.user,
+                property_uuid=property_uuid,
+            )   
+
+        except ObjectDoesNotExist:
+
+            return Response(
+                {"detail": "Property not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+# class PropertyUpdateAPIView(GenericAPIView):
+#     """Update a property owned by the authenticated user."""
+
+#     serializer_class = PropertyWriteSerializer
+#     permission_classes = [IsAuthenticated]
+
+
+#     def patch(self, request, property_uuid, *args, **kwargs):
+#         serializer = self.get_serializer(
+#             data=request.data, partial=True,
+#         )
+
+#         serializer.is_valid(raise_exception=True)
+
+#         try:
+#             property_obj = PropertyService.update_property(
+#                 owner=request.user,
+#                 property_uuid=property_uuid,
+#                 validated_data=serializer.validated_data,
+#             )
+
+#         except ObjectDoesNotExist:
+
+#             return Response(
+#                 {
+#                     "detail": "Property not found."
+#                 }, status=status.HTTP_404_NOT_FOUND,
+#             )
+
+#         return Response(
+#             PropertyDetailSerializer(property_obj).data,
+#             status=status.HTTP_200_OK,
+#         )
+
+
+
