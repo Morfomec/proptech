@@ -3,6 +3,8 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from apps.properties.serializers.property_serializer import (
     PropertyDetailSerializer, PropertyWriteSerializer, PropertyListSerializer
 )
@@ -60,3 +62,27 @@ class MyPropertyListAPIView(GenericAPIView):
         return Response(
             serializer.data
         )
+
+
+class PropertyDetailAPIView(GenericAPIView):
+    """Retrieve a property owner by the authenticated user."""
+
+    permissions_classes = [IsAuthenticated]
+
+    def get(self, request, property_uuid, *args, **kwargs):
+        try:
+            property_obj = PropertyService.get_property(
+                owner=request.user,
+                property_uuid=property_uuid,
+            )
+
+        except ObjectDoesNotExist:
+            
+            return Response(
+                {"detail": "Property not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = PropertyDetailSerializer(property_obj)
+
+        return Response(serializer.data)

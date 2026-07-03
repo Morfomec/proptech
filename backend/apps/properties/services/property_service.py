@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
+from django.core.exceptions import ObjectDoesNotExist
 
 from apps.properties.models import Property, PropertyAddress
 
@@ -32,3 +33,13 @@ class PropertyService:
         return (
             Property.objects.filter(owner=owner).order_by("-created_at")
         )
+
+
+    @staticmethod
+    def get_property(*, owner: User, property_uuid: str) -> Property:
+
+        try:
+            return Property.objects.get(uuid=property_uuid, owner=owner)
+
+        except Property.DoesNotExist:
+            raise ObjectDoesNotExist("Property not found.")
