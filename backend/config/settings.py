@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from decouple import config
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,7 +43,8 @@ INSTALLED_APPS = [
 
     #Third Party Apps
     "rest_framework",
-    "coresheaders",
+    "corsheaders",
+    "rest_framework_simplejwt.token_blacklist",
 
     #Local Apps
     "apps.accounts",
@@ -58,7 +60,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -135,7 +136,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Media files
 
-MEDIA_URL = "/media"
+MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
@@ -157,3 +158,22 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATW_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+}
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+APP_NAME = config("APP_NAME")
+FRONTEND_URL = config("FRONTEND_URL")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+SUPPORT_EMAIL = config("SUPPORT_EMAIL")
+
+AUTH_USER_MODEL = "accounts.User"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
