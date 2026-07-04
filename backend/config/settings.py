@@ -33,7 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    #Django Apps
+    # Django Apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -41,17 +41,19 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    #Third Party Apps
+    # Third Party Apps
     "rest_framework",
     "corsheaders",
     "rest_framework_simplejwt.token_blacklist",
 
-    #Local Apps
+    # Local Apps
     "apps.accounts",
+    "apps.properties",
+    "apps.common",
 ]
 
 MIDDLEWARE = [
-    #Django Middlewares
+    # Django Middlewares
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -176,4 +178,3 @@ SUPPORT_EMAIL = config("SUPPORT_EMAIL")
 
 AUTH_USER_MODEL = "accounts.User"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
