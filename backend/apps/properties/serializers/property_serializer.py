@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.properties.models import Property, PropertyAddress
+from apps.properties.models import Property, PropertyAddress, PropertyImage
 
 # from .property_address_serializer import PropertyAddressSerializer
 
@@ -81,6 +81,35 @@ class PropertyListSerializer(serializers.ModelSerializer):
             "property_type",
             "property_category",
             "status",
+        )
+
+        read_only_fields = fields
+
+
+
+class PropertyImageWriteSerializer(serializers.ModelSerializer):
+    """Serializer for uploading property images."""
+
+    class Meta:
+        model = PropertyImage
+
+        fields = (
+            "image",
+            "display_order",
+            "is_primary",
+        )
+
+class PropertyImageDetailSerializer(serializers.ModelSerializer):
+    """Serializer for property image responses."""
+
+    class Meta:
+        model=PropertyImage
+        fields = (
+            "uuid",
+            "image",
+            "display_order",
+            "is_primary",
+            "created_at",
         )
 
         read_only_fields = fields

@@ -1,12 +1,13 @@
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 
 from django.core.exceptions import ObjectDoesNotExist
 
 from apps.properties.serializers.property_serializer import (
-    PropertyDetailSerializer, PropertyWriteSerializer, PropertyListSerializer
+    PropertyDetailSerializer, PropertyWriteSerializer, PropertyListSerializer, PropertyImageWriteSerializer, PropertyImageDetailSerializer
 )
 from apps.properties.services.property_service import PropertyService
 
@@ -202,4 +203,27 @@ class PropertyRetrieveUpdateAPIView(GenericAPIView):
 #         )
 
 
+class PropertyImageUploadAPIView(GenericAPIView):
+    """Upload an image for a property owned by the authenticated user."""
 
+
+    serializer_class = PropertyImageWriteSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, property_uuid, *args, **kwargs):
+        """Upload a property Image."""
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        property_image = PropertyService.upload_property_image(
+            owner=request.user,
+            property_uuid=property_uuid,
+            validated_data=serializer.validated_data,
+        )
+
+        return Response(
+            PropertyImageDetailSerializer(property_image).data,
+            status=status.HTTP_201_CREATED
+        )
