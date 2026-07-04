@@ -30,7 +30,7 @@ class UpdateMyProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request):
-        serializer = UpdateMyProfileSerializer(data=request.data, partial=True)
+        serializer = UpdateMyProfileSerializer(instance= request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
         user = ProfileService.update_my_profile(
