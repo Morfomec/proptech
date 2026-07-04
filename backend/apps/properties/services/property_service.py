@@ -30,7 +30,7 @@ class PropertyService:
     @staticmethod
     def get_user_properties(*, owner: User) -> QuerySet[Property]:
         return (
-            Property.objects.filter(owner=owner).order_by("-created_at")
+            Property.objects.filter(owner=owner, deleted_at__isnull=True).order_by("-created_at")
         )
 
     @staticmethod
@@ -84,7 +84,7 @@ class PropertyService:
         property_obj.deleted_at = timezone.now()
 
         property_obj.save(
-            updated_filed=["deleted_at"],
+            update_fields=["deleted_at"],
         )
 
     @staticmethod
