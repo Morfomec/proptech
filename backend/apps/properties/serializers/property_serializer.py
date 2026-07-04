@@ -62,6 +62,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
             "construction_status",
             "status",
             "address",
+            "images",
             "created_at",
             "updated_at",
         )

@@ -122,3 +122,60 @@ class PropertyService:
         )
 
         return property_image
+
+
+
+
+    @staticmethod
+    def _get_property_image(*, property_obj: Property, image_uuid: UUID) -> PropertyImage:
+
+        try:
+            return PropertyImage.objects.get(
+                property=property_obj,
+                uuid=image_uuid,
+            )
+
+        except PropertyImage.DoesNotExist:
+            raise ObjectDoesNotExist(
+                "Property image not found."
+            )
+
+
+    @staticmethod
+    @transaction.atomic
+    def delete_property_image(*, owner: User, property_uuid: UUID, image_uuid: UUID) -> None:
+
+        property_obj = PropertyService._get_owned_property(
+            owner=owner,
+            property_uuid=property_uuid,
+        )
+
+
+        property_image = PropertyService._get_property_image(
+            property_obj=property_obj,
+            image_uuid=image_uuid,
+        )
+
+
+        was_primary = property_image.is_primary
+
+
+        property_image.image.delete(save=False)
+
+
+        property_image.delete()
+
+        if was_primary:
+
+            next_image = (
+                PropertyImage.objects
+                .filter(property=property_obj)
+                .order_by(
+                    "display_order", "created_at",
+                )
+                .first()
+            )
+
+        if next_image:
+            next_image.is_primary = True
+            next_image.save(update_fields=["is_primary"])

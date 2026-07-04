@@ -227,3 +227,31 @@ class PropertyImageUploadAPIView(GenericAPIView):
             PropertyImageDetailSerializer(property_image).data,
             status=status.HTTP_201_CREATED
         )
+
+
+
+class PropertyImageDeleteAPIView(GenericAPIView):
+    """Delete a property image owned by the authenticated user."""
+
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, property_uuid, image_uuid, *args, **kwargs):
+        """Delete a property image"""
+
+        try:
+            PropertyService.delete_property_image(
+                owner=request.user,
+                property_uuid=property_uuid,
+                image_uuid=image_uuid,
+            )
+
+        except ObjectDoesNotExist:
+
+            return Response(
+                {"detail": "Property image not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT,
+        )
