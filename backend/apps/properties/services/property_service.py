@@ -55,7 +55,7 @@ class PropertyService:
         property_obj = PropertyService._get_owned_property(
             owner=owner, property_uuid=property_uuid)
 
-        address_data = validated_data = validated_data.pop("address", None)
+        address_data = validated_data.pop("address", None)
 
         for field, value in validated_data.items():
             setattr(property_obj, field, value)
@@ -179,3 +179,209 @@ class PropertyService:
         if next_image:
             next_image.is_primary = True
             next_image.save(update_fields=["is_primary"])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from uuid import UUID
+
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
+from django.db.models import QuerySet
+from django.utils import timezone
+
+from apps.properties.choices import (
+    OwnershipType,
+    OwnershipVerificationStatus,
+)
+from apps.properties.models import (
+    Property,
+    Unit,
+    UnitOwnership,
+    UnitPricing,
+)
+
+User = get_user_model()
+
+
+class UnitService:
+    """
+    Handles all business logic related to Unit Management.
+
+    Business Rules:
+    - Only the property owner can create units.
+    - Every unit must have one pricing record.
+    - Every newly created unit automatically gets an owner.
+    """
+
+    @staticmethod
+    @transaction.atomic
+    def create_unit(*, owner: User, validated_data: dict) -> Unit:
+        """
+        Creates a complete Unit aggregate.
+
+        Creates:
+        - Unit
+        - UnitPricing
+        - Initial UnitOwnership
+
+        All operations execute inside a single database transaction.
+        """
+
+        # Extract nested pricing payload.
+        pricing_data = validated_data.pop("pricing")
+
+        # Verify that the property belongs to the authenticated user.
+        property_obj = UnitService._get_owned_property(
+            owner=owner,
+            property_uuid=validated_data["property"].uuid,
+        )
+
+        validated_data["property"] = property_obj
+
+        # Create the unit.
+        unit = Unit.objects.create(**validated_data)
+
+        # Create pricing.
+        UnitService._create_pricing(
+            unit=unit,
+            pricing_data=pricing_data,
+        )
+
+        # Register the authenticated user as the initial owner.
+        UnitService._create_initial_owner(
+            unit=unit,
+            owner=owner,
+        )
+
+        return unit
+
+    @staticmethod
+    def get_property_units(*, owner: User, property_uuid: UUID) -> QuerySet[Unit]:
+        """
+        Returns all active units belonging to one property.
+        """
+
+        property_obj = UnitService._get_owned_property(
+            owner=owner,
+            property_uuid=property_uuid,
+        )
+
+        return Unit.objects.filter(
+            property=property_obj,
+            deleted_at__isnull=True,
+        ).order_by(
+            "floor_number",
+            "unit_number",
+        )
+
+    @staticmethod
+    def get_unit(*, owner: User, unit_uuid: UUID) -> Unit:
+        """
+        Returns a single unit owned by the authenticated user.
+        """
+
+        return UnitService._get_owned_unit(
+            owner=owner,
+            unit_uuid=unit_uuid,
+        )
+
+    @staticmethod
+    @transaction.atomic
+    def delete_unit(*, owner: User, unit_uuid: UUID) -> None:
+        """
+        Soft deletes a unit.
+        """
+
+        unit = UnitService._get_owned_unit(
+            owner=owner,
+            unit_uuid=unit_uuid,
+        )
+
+        unit.deleted_at = timezone.now()
+
+        unit.save(update_fields=["deleted_at"])
+
+    # ------------------------------------------------------------------
+    # Private Helper Methods
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _get_owned_property(*, owner: User, property_uuid: UUID) -> Property:
+        """
+        Returns a property only if it belongs to the authenticated user.
+        """
+
+        try:
+            return Property.objects.get(
+                owner=owner,
+                uuid=property_uuid,
+                deleted_at__isnull=True,
+            )
+
+        except Property.DoesNotExist:
+            raise ObjectDoesNotExist("Property not found.")
+
+    @staticmethod
+    def _get_owned_unit(*, owner: User, unit_uuid: UUID) -> Unit:
+        """
+        Returns a unit only if it belongs to one of the user's properties.
+        """
+
+        try:
+            return Unit.objects.get(
+                uuid=unit_uuid,
+                property__owner=owner,
+                deleted_at__isnull=True,
+            )
+
+        except Unit.DoesNotExist:
+            raise ObjectDoesNotExist("Unit not found.")
+
+    @staticmethod
+    def _create_pricing(*, unit: Unit, pricing_data: dict) -> UnitPricing:
+        """
+        Creates the pricing record associated with a unit.
+        """
+
+        return UnitPricing.objects.create(
+            unit=unit,
+            **pricing_data,
+        )
+
+    @staticmethod
+    def _create_initial_owner(*, unit: Unit, owner: User) -> UnitOwnership:
+        """
+        Registers the authenticated user as the initial owner
+        of the newly created unit.
+        """
+
+        return UnitOwnership.objects.create(
+            unit=unit,
+            user=owner,
+            ownership_percentage=100,
+            ownership_type=OwnershipType.SOLE,
+            verified_status=OwnershipVerificationStatus.VERIFIED,
+        )
