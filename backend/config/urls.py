@@ -21,16 +21,19 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+API_PREFIX = "api/v1"
+
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    path("api/v1/auth/", include("apps.accounts.urls.auth_urls")),
-    path("api/v1/profile/", include("apps.accounts.urls.profile_urls")),
-    
-    path("api/v1/properties/", include("apps.properties.urls.property_urls")),
-    path("api/v1/units/", include("apps.properties.urls.unit_urls")),
-]
+    path(f"{API_PREFIX}/auth/", include("apps.accounts.urls.auth_urls")),
+    path(f"{API_PREFIX}/profile/", include("apps.accounts.urls.profile_urls")),
 
+    path(f"{API_PREFIX}/properties/", include("apps.properties.urls.property_urls")),
+    path(f"{API_PREFIX}/units/", include("apps.properties.urls.unit_urls")),
+
+    path(f"{API_PREFIX}/listings/", include("apps.listings.urls.listing_urls")),
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

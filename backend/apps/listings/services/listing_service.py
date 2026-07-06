@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import transaction
 
 from apps.listings.choices import ListingStatus
@@ -16,8 +16,8 @@ class ListingService:
 
         unit = validated_data.pop("unit")
 
-        if unit.owner != user:
-            raise ValidationError(
+        if unit.property.owner != user:
+            raise PermissionDenied(
                 "You do not have permission to create a listing for this unit."
             )
 
@@ -28,7 +28,7 @@ class ListingService:
                 "Configure unit price before creating a listing."
             )
 
-        if Listing.object.filter(
+        if Listing.objects.filter(
             unit=unit,
             listing_status=ListingStatus.ACTIVE,
             deleted_at__isnull=True,
@@ -39,7 +39,7 @@ class ListingService:
 
         listing = Listing.objects.create(
             unit=unit,
-            create_by=user,
+            created_by=user,
             listing_status=ListingStatus.DRAFT,
             price=pricing.rent_amount,
             **validated_data,
@@ -47,12 +47,16 @@ class ListingService:
 
         return listing
 
-    update_listing()
 
-    publish_listing()
 
-    archive_listing()
+    
 
-    mark_rented()
+    # update_listing()
 
-    delete_listing()
+    # publish_listing()
+
+    # archive_listing()
+
+    # mark_rented()
+
+    # delete_listing()

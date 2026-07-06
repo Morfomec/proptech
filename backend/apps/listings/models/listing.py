@@ -11,7 +11,7 @@ class Listing(BaseModel):
     """Represents market place listing for units either for rent or sale."""
 
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name="listings")
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="listings")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="listings")
     listing_type = models.CharField(max_length=20, choices=ListingType.choices)
     listing_status = models.CharField(max_length=20, choices=ListingStatus.choices, default=ListingStatus.ACTIVE)
 
@@ -21,7 +21,7 @@ class Listing(BaseModel):
     price = models.DecimalField(max_digits=12, decimal_places=2)
 
     available_from = models.DateField()
-    published_at = models.DateTimeField(auto_now_add=True)
+    published_at = models.DateTimeField(null=True, blank=True)
     expires_at = models.DateTimeField(null=True, blank=True)
 
     view_count = models.PositiveIntegerField(default=0)

@@ -22,6 +22,7 @@ class ListingCreateSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "available_from",
+            
         )
 
         extra_kwargs = {
@@ -115,9 +116,9 @@ class ListingDetailSerializer(serializers.ModelSerializer):
 
         fields = (
             "uuid",
-            "unit",
-            "property",
-            "created_by",
+            "unit_uuid",
+            "property_uuid",
+            "created_by_uuid",
             "listing_type",
             "listing_status",
             "title",
@@ -126,8 +127,8 @@ class ListingDetailSerializer(serializers.ModelSerializer):
             "available_from",
             "published_at",
             "expires_at",
-            "views_count",
-            "favorites_count",
+            "view_count",
+            "favorite_count",
             "created_at",
             "updated_at",
         )
