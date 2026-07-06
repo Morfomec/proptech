@@ -35,5 +35,12 @@ class Unit(BaseModel):
         db_table = "units"
         ordering = ["floor_number", "unit_number"]
 
+        constraints = [
+            models.UniqueConstraint(
+                fields=["property", "unit_number"],
+                name="unique_unit_number_per_property",
+            )
+        ]
+
     def __str__(self):
         return self.title

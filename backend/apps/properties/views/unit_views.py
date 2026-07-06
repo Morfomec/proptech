@@ -4,10 +4,12 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from apps.properties.serializers.unit_serializer import (
     UnitWriteSerializer,
     UnitDetailSerializer,
+    UnitImageSerializer,
 )
 from apps.properties.services.unit_service import UnitService
 
@@ -100,6 +102,52 @@ class UnitDeleteAPIView(GenericAPIView):
         UnitService.delete_unit(
             owner=request.user,
             unit_uuid=unit_uuid,
+        )
+
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
+    
+
+
+class UnitImageUploadAPIView(GenericAPIView):
+    """Upload an image for a unit."""
+
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    serializer_class = UnitImageSerializer
+
+
+    def post(self, request, unit_uuid: UUID):
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        image = UnitService.upload_unit_image(
+            owner=request.user,
+            unit_uuid=unit_uuid,
+            validated_data=serializer.validated_data,
+        )
+
+
+        return Response(
+            UnitImageSerializer(image).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class UnitImageDeleteAPIView(GenericAPIView):
+    """Delete an image for a unit."""
+    
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, unit_uuid: UUID, image_uuid: UUID):
+
+        UnitService.delete_unit_image(
+            owner=request.user,
+            unit_uuid=unit_uuid,
+            image_uuid=image_uuid,
         )
 
 

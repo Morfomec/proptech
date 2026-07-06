@@ -70,3 +70,20 @@ class UnitDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
+
+
+class UnitImageSerializer(serializers.ModelSerializer):
+    """Validated unit image uploads."""
+
+    class Meta:
+        model = UnitImage
+        fields = (
+            "uuid",
+            "image",
+            "is_primary",
+            "display_order",
+            "created_at",
+        )
+
+        read_only_fields = ("uuid", "display_order", "created_at")
+
