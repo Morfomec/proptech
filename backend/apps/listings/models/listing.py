@@ -13,7 +13,7 @@ class Listing(BaseModel):
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name="listings")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="listings")
     listing_type = models.CharField(max_length=20, choices=ListingType.choices)
-    listing_status = models.CharField(max_length=20, choices=ListingStatus.choices, default=ListingStatus.ACTIVE)
+    listing_status = models.CharField(max_length=20, choices=ListingStatus.choices, default=ListingStatus.DRAFT)
 
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)

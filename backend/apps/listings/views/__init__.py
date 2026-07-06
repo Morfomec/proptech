@@ -1,6 +1,6 @@
-from .listing_views import ListingCreateAPIView
+from .listing_views import ListingListCreateAPIView
 
 __all__ = [
-    "ListingCreateAPIView",
+    "ListingListCreateAPIView",
 ]
 

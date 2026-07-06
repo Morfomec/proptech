@@ -28,13 +28,19 @@ class ListingService:
                 "Configure unit price before creating a listing."
             )
 
-        if Listing.objects.filter(
+        # Prevent multiple draft or active listings for the same unit.
+        existing_listing = Listing.objects.filter(
             unit=unit,
-            listing_status=ListingStatus.ACTIVE,
+            listing_status__in=[
+                ListingStatus.DRAFT,
+                ListingStatus.ACTIVE,
+            ],
             deleted_at__isnull=True,
-        ).exists():
+        ).exists()
+
+        if existing_listing:
             raise ValidationError(
-                "This unit already has an active listing."
+                "This unit already has a draft or active listing."
             )
 
         listing = Listing.objects.create(
@@ -48,7 +54,16 @@ class ListingService:
         return listing
 
 
+    @staticmethod
+    def get_listing(*, filters: dict | None = None):
+        """Returns all active listings."""
 
+        return Listing.objects.filter(
+            deleted_at__isnull=True,
+            # listing_status=ListingStatus.ACTIVE,
+        ).select_related(
+            "unit", "unit__property", "created_by",
+        ).order_by("-published_at")
     
 
     # update_listing()
