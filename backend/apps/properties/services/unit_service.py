@@ -1,6 +1,5 @@
 from django.db import transaction
 from django.db.models import QuerySet
-from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
@@ -37,7 +36,7 @@ class UnitService:
 
 
     @staticmethod
-    def get_property_units(*, owner: User, property_uuid) -> QuerySet[unit]:
+    def get_property_units(*, owner: User, property_uuid) -> QuerySet[Unit]:
         """Retrieve all the active units belonging to a property owner by the authenticated user."""
 
         property_obj = UnitService._get_owned_property(
@@ -51,7 +50,7 @@ class UnitService:
                 property=property_obj,
                 deleted_at__isnull=True,
             )
-            .order_by("created_at")
+            .order_by("-created_at")
         )
 
 
@@ -59,7 +58,7 @@ class UnitService:
     def get_unit(*, owner: User, unit_uuid: UUID) -> Unit:
         """Retrieve a single unit owned by the authenticated user."""
 
-        return UnitService._get_owned_property(
+        return UnitService._get_owned_unit(
             owner=owner,
             unit_uuid=unit_uuid,
         )
@@ -74,7 +73,7 @@ class UnitService:
             owner=owner, unit_uuid=unit_uuid,
         )
 
-        pricing_data = validated.pop("pricing", None)
+        pricing_data = validated_data.pop("pricing", None)
 
         for field, value in validated_data.items():
             setattr(unit, field, value)
@@ -86,7 +85,7 @@ class UnitService:
             pricing = unit.pricing
             
             for field, value in pricing_data.items():
-                setattr(pricing, fields, value)
+                setattr(pricing, field, value)
 
             pricing.save()
 
@@ -95,10 +94,11 @@ class UnitService:
 
 
     @staticmethod
+    @transaction.atomic
     def delete_unit(*, owner: User, unit_uuid: UUID) -> None:
         """Soft delete a unit."""
 
-        unit = UnitService._get_onwed_unit(
+        unit = UnitService._get_owned_unit(
             owner=owner,
             unit_uuid=unit_uuid,
         )
@@ -149,16 +149,16 @@ class UnitService:
 
         return UnitOwnership.objects.create(
             unit=unit,
-            user=Owner,
+            user=owner,
             ownership_percentage=100,
-            ownership_type=ownershipType.SOLE,
+            ownership_type=OwnershipType.SOLE,
             verified_status=OwnershipVerificationStatus.VERIFIED,
         )
 
 
 
     @staticmethod
-    def _get_owned_units(*, owner: User, unit_uuid: UUID) -> Unit:
+    def _get_owned_unit(*, owner: User, unit_uuid: UUID) -> Unit:
         """Retrieve a unit owned by the authenticated user.
 
         Owner ship is validated through the parent property"""
@@ -169,11 +169,11 @@ class UnitService:
                 "pricing",
             ).get(
                 uuid=unit_uuid,
-                property_owner=owner,
+                property__owner=owner,
                 deleted_at__isnull=True,
             )
 
-        except Unit,DoesNotExist:
+        except Unit.DoesNotExist:
             raise ObjectDoesNotExist(
                 "Unit not found."
             )

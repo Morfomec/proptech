@@ -26,7 +26,9 @@ urlpatterns = [
 
     path("api/v1/auth/", include("apps.accounts.urls.auth_urls")),
     path("api/v1/profile/", include("apps.accounts.urls.profile_urls")),
+    
     path("api/v1/properties/", include("apps.properties.urls.property_urls")),
+    path("api/v1/units/", include("apps.properties.urls.unit_urls")),
 ]
 
 
