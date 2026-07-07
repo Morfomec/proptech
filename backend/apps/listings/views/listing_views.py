@@ -106,3 +106,14 @@ class ListingDetailAPIView(GenericAPIView):
         response_serializer = ListingDetailSerializer(listing)
 
         return Response(response_serializer.data)
+
+
+    def delete(self, request, listing_uuid, *args, **kwrags):
+        ListingService.delete_listing(
+            listing_uuid=listing_uuid,
+            user=request.user,
+        )
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT,
+        )

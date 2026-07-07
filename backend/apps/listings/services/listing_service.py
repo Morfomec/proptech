@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from apps.listings.choices import ListingStatus
 from apps.listings.models import Listing
@@ -107,6 +108,35 @@ class ListingService:
         listing.save()
 
         return listing
+    
+
+
+    @staticmethod
+    @transaction.atomic
+    def delete_listing(*, listing_uuid, user) -> None:
+        """Soft deleted a listing."""
+
+
+        listing = ListingService.get_listing(
+            listing_uuid=listing_uuid,
+        )
+
+        if listing.created_by != user:
+            raise PermissionDenied(
+                "You do not have permission to delete this listing."
+            )
+        
+        if listing.listing_status not in (
+            ListingStatus.DRAFT,
+            ListingStatus.ARCHIVED,
+        ):
+            raise ValidationError(
+                "Only draft or archived listings can be deleted."
+            )
+        
+
+        listing.deleted_at = timezone.now()
+        listing.save(update_fields=["deleted_at"])
 
     # publish_listing()
 
@@ -114,4 +144,3 @@ class ListingService:
 
     # mark_rented()
 
-    # delete_listing()
