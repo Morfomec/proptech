@@ -18,6 +18,7 @@ class UnitPricing(BaseModel):
 
     class Meta:
         db_table = "unit_pricing"
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.unit.title} Pricing"
+        return f"{self.unit.title} - ₹{self.rent_amount}"
