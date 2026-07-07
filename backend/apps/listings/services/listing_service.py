@@ -138,9 +138,104 @@ class ListingService:
         listing.deleted_at = timezone.now()
         listing.save(update_fields=["deleted_at"])
 
-    # publish_listing()
 
-    # archive_listing()
+    @staticmethod
+    @transaction.atomic
+    def publish_listing(*, listing_uuid, user) -> Listing:
+        """Publish a draft lisitng."""
+
+        listing = ListingService.get_listing(
+            listing_uuid=listing_uuid,
+        )
+
+        if listing.created_by != user:
+            raise PermissionDenied(
+                "You do not have permission to publish this listing."
+            )
+        
+        if listing.listing_status != ListingStatus.DRAFT:
+            raise ValidationError(
+                "Only draft listings can be published."
+            )
+        
+
+        active_listing_existis = Listing.objects.filter(
+            unit=listing.unit,
+            listing_status=ListingStatus.ACTIVE,
+            deleted_at__isnull=True,
+        ).exclude(
+            pk=listing.pk,
+        ).exists()
+
+        if active_listing_existis:
+            raise ValidationError(
+                "This unit already has an active listing."
+            )
+        
+        listing.listing_status = ListingStatus.ACTIVE
+        listing.published_at = timezone.now()
+        
+        listing.save(
+            update_fields=[
+                "listing_status",
+                "published_at",
+                "updated_at",
+            ]
+        )
+
+        return listing
+    
+
+    @staticmethod
+    @transaction.atomic
+    def archive_listing(*, listing_uuid, user) -> Listing:
+        """Archives an  active listing."""
+
+        listing = ListingService.get_listing(
+            listing_uuid=listing_uuid,
+        )
+
+
+        if listing.created_by != user:
+            raise PermissionDenied(
+                "You do not have permission to archive this listing."
+            )
+        
+        if listing.listing_status != ListingStatus.ACTIVE:
+            raise ValidationError(
+                "Only active listings can be archived."
+            )
+
+
+        listing.listing_status = ListingStatus.ARCHIVED
+        listing.save(
+            update_fields=["listing_status", "updated_at"]
+        )
+
+        return listing
+
+
+    @staticmethod
+    def get_my_listing(*, user):
+        """ Return all listing created by the authenticated user."""
+
+
+        return (
+            Listing.objects.filter(
+                created_by=user,
+                deleted_at__isnull=True,
+            )
+            .select_related(
+                "unit",
+                "unit__property",
+                "created_by",
+            )
+            .order_by("created_at")
+        )
+    
 
     # mark_rented()
-
+    # Marketplace
+    # Public List
+    # Public Detail
+    # Search

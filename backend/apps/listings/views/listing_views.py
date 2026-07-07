@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 
@@ -117,3 +117,59 @@ class ListingDetailAPIView(GenericAPIView):
         return Response(
             status=status.HTTP_204_NO_CONTENT,
         )
+    
+
+
+class ListingPublishAPIView(GenericAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, listing_uuid):
+        listing = ListingService.publish_listing(
+            listing_uuid=listing_uuid,
+            user=request.user
+        )
+
+        serializer = ListingDetailSerializer(listing)
+
+        return Response(
+            serializer.data,
+        )
+    
+
+class ListingArchiveAPIView(GenericAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, listing_uuid):
+        listing = ListingService.archive_listing(
+            listing_uuid=listing_uuid,
+            user=request.user,
+        )
+
+
+        serializer = ListingDetailSerializer(listing)
+
+        return Response(serializer.data)
+    
+
+
+class MyListingAPIView(GenericAPIView):
+    """Returns all listings created by the authenticated user."""
+
+
+    serializer_class = ListingListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        listings = ListingService.get_my_listing(
+            user=request.user,
+        )
+
+        serializer = self.get_serializer(
+            listings,
+            many=True,
+        )
+
+        return Response(serializer.data)
+    
