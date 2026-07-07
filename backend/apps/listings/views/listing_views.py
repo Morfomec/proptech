@@ -1,7 +1,8 @@
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
+
 
 from apps.listings.serializers import ListingCreateSerializer, ListingDetailSerializer, ListingListSerializer
 
@@ -22,7 +23,7 @@ class ListingListCreateAPIView(GenericAPIView):
         return ListingCreateSerializer
 
     def get(self, request, *args, **kwargs):
-        listings = ListingService.get_listing()
+        listings = ListingService.get_listings()
 
         serializer = self.get_serializer(
             listings, many=True,
@@ -47,7 +48,6 @@ class ListingListCreateAPIView(GenericAPIView):
             status=status.HTTP_201_CREATED,
         )
 
-
 # class ListingListAPIView(GenericAPIView):
 #     """Returns all active listiings."""
 
@@ -63,3 +63,24 @@ class ListingListCreateAPIView(GenericAPIView):
 #         )
 
 #         return Response(serializer.data)
+
+
+class ListingDetailAPIView(GenericAPIView):
+    """Retrieve a single listing."""
+
+
+    serializer_class = ListingDetailSerializer
+    permission_classes = [AllowAny]
+
+
+    def get(self, request,listing_uuid, *args, **kwargs):
+        listing = ListingService.get_listing(
+            listing_uuid=listing_uuid,
+        )
+
+        serializer = self.get_serializer(listing)
+
+        return Response(serializer.data)
+    
+
+

@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 
 from apps.listings.choices import ListingStatus
 from apps.listings.models import Listing
@@ -55,7 +56,7 @@ class ListingService:
 
 
     @staticmethod
-    def get_listing(*, filters: dict | None = None):
+    def get_listings(*, filters: dict | None = None):
         """Returns all active listings."""
 
         return Listing.objects.filter(
@@ -65,6 +66,20 @@ class ListingService:
             "unit", "unit__property", "created_by",
         ).order_by("-published_at")
     
+
+    @staticmethod
+    def get_listing(*, listing_uuid) -> Listing:
+        """Returns a single listing by UUID."""
+
+        return get_object_or_404(
+            Listing.objects.select_related(
+            "unit",
+            "unit__property",
+            "created_by",
+            ),
+            uuid=listing_uuid,
+            deleted_at__isnull=True,
+        )
 
     # update_listing()
 
