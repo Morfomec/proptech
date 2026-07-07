@@ -2,7 +2,7 @@ from django.db import transaction
 from django.db.models import F
 from rest_framework.exceptions import ValidationError
 
-
+from apps.listings.choices import ListingStatus
 from apps.listings.models import Listing, SavedListing
 
 
@@ -19,7 +19,7 @@ class SavedListingService:
 
         listing = Listing.objects.filter(
             uuid=listing_uuid,
-            listing_status=Listing.Status.ACTIVE,
+            listing_status=ListingStatus.ACTIVE,
             deleted_at__isnull=True,
         ).first()
 
@@ -40,7 +40,7 @@ class SavedListingService:
         SavedListing.objects.create(user=user, listing=listing)
 
         Listing.objects.filter(pk=listing.pk).update(
-            favorite_count=F("favoriteS_count") + 1
+            favorite_count=F("favorite_count") + 1
         )
 
         return listing

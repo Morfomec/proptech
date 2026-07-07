@@ -33,6 +33,7 @@ urlpatterns = [
     path(f"{API_PREFIX}/units/", include("apps.properties.urls.unit_urls")),
 
     path(f"{API_PREFIX}/listings/", include("apps.listings.urls.listing_urls")),
+    path(f"{API_PREFIX}/saved-listings/", include("apps.listings.urls.saved_listing_urls")),
 ]
 
 if settings.DEBUG:
