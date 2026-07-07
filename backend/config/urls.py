@@ -31,6 +31,7 @@ urlpatterns = [
 
     path(f"{API_PREFIX}/properties/", include("apps.properties.urls.property_urls")),
     path(f"{API_PREFIX}/units/", include("apps.properties.urls.unit_urls")),
+    path(f"{API_PREFIX}/unit-pricing/", include("apps.properties.urls.unit_pricing_urls")),
 
     path(f"{API_PREFIX}/listings/", include("apps.listings.urls.listing_urls")),
     path(f"{API_PREFIX}/saved-listings/", include("apps.listings.urls.saved_listing_urls")),
