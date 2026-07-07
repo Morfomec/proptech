@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 
 
-from apps.listings.serializers import ListingCreateSerializer, ListingDetailSerializer, ListingListSerializer
+from apps.listings.serializers import ListingCreateSerializer, ListingDetailSerializer, ListingListSerializer, ListingUpdateSerializer
 
 from apps.listings.services import ListingService
 
@@ -69,7 +69,12 @@ class ListingDetailAPIView(GenericAPIView):
     """Retrieve a single listing."""
 
 
-    serializer_class = ListingDetailSerializer
+    def get_serializer_class(self):
+        if self.request.method == "PATCH":
+            return ListingUpdateSerializer
+
+        return ListingDetailSerializer
+    
     permission_classes = [AllowAny]
 
 
@@ -83,4 +88,21 @@ class ListingDetailAPIView(GenericAPIView):
         return Response(serializer.data)
     
 
+    def patch(self, request, listing_uuid, *args, **kwargs):
+        serializer = ListingUpdateSerializer(
+            data=request.data,
+            partial=True,
+        )
 
+        serializer.is_valid(raise_exception=True)
+
+        listing = ListingService.update_listing(
+            listing_uuid=listing_uuid,
+            user=request.user,
+            validated_data=serializer.validated_data,
+        )
+
+
+        response_serializer = ListingDetailSerializer(listing)
+
+        return Response(response_serializer.data)

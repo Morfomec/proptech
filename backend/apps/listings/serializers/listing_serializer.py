@@ -84,7 +84,7 @@ class ListingUpdateSerializer(serializers.ModelSerializer):
 
 
 class ListingListSerializer(serializers.ModelSerializer):
-    """Serializer for listing search results."""
+    """Ser2752a701-d27c-4c3b-ba91-c3b0c9f9c8a3ializer for listing search results."""
 
     unit = serializers.UUIDField(source="unit.uuid", read_only=True)
 

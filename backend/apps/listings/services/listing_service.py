@@ -81,7 +81,32 @@ class ListingService:
             deleted_at__isnull=True,
         )
 
-    # update_listing()
+    @staticmethod
+    @transaction.atomic
+    def update_listing(*, listing_uuid, user, validated_data: dict) -> Listing:
+        """Updates an existing listing."""
+
+
+        listing = ListingService.get_listing(
+            listing_uuid=listing_uuid,
+        )
+
+        if listing.created_by != user:
+            raise PermissionDenied(
+                "You do not have perimission to update this listing."
+            )
+        
+        if listing.listing_status != ListingStatus.DRAFT:
+            raise ValidationError(
+                "Only draft listings can be updated."
+            )
+
+        for field, value in validated_data.items():
+            setattr(listing, field, value)
+
+        listing.save()
+
+        return listing
 
     # publish_listing()
 
