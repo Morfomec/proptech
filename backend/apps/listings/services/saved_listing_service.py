@@ -44,3 +44,42 @@ class SavedListingService:
         )
 
         return listing
+    
+
+
+    @staticmethod
+    def get_saved_listings(*, user):
+        """Return all active saved listings for the authenticated user"""
+
+
+        return (
+            SavedListing.objects.filter(
+                user=user,
+                listing__listing_status=ListingStatus.ACTIVE,
+                listing__deleted_at__isnull=True
+            ).select_related(
+                "listing",
+                "listing__unit",
+                "listing__unit__property",
+            ).order_by("-created_at")
+        )
+
+
+    @staticmethod
+    @transaction.atomic
+    def remove_saved_listing(*, user, listing_uuid):
+        """Removes a savedf listing for the authenticated user."""
+
+
+        saved_listing = SavedListing.objects.filter(
+            user=user, 
+            listing__uuid=listing_uuid,
+        ).first()
+
+
+        if not saved_listing:
+            raise ValidationError(
+                {"listing_uuid": "Saved listing not found."}
+            )
+        
+        saved_listing.delete()

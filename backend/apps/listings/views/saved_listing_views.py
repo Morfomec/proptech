@@ -4,21 +4,26 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.listings.serializers.saved_listing_serializer import (
-    SavedListingSerializer,
+    SaveListingSerializer, SavedListingReadSerializer,
 )
 from apps.listings.services.saved_listing_service import (
     SavedListingService,
 )
 
 
-class SaveListingAPIView(GenericAPIView):
-    """Allows an authenticated user to save a listing."""
+class SavedListingAPIView(GenericAPIView):
+    """Handles saved listing operations for authenticated users."""
 
 
-    serializer_class = SavedListingSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = SaveListingSerializer
+    
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return SaveListingSerializer
+        return SavedListingReadSerializer
 
     def post(self, request):
+        """Save a listing for an authenticated user."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -33,3 +38,37 @@ class SaveListingAPIView(GenericAPIView):
         )
     
 
+
+    def get(self, request):
+        """Retrieve all saved"""
+
+        saved_listings = SavedListingService.get_saved_listings(
+            user=request.user
+        )
+
+
+        serializer = self.get_serializer(saved_listings, many=True)
+
+        return Response(serializer.data)
+    
+
+class RemoveSavedListingAPIView(GenericAPIView):
+    """
+    Removes a saved listing for the authenticated user.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, listing_uuid):
+        """
+        Remove a saved listing.
+        """
+        SavedListingService.remove_saved_listing(
+            user=request.user,
+            listing_uuid=listing_uuid,
+        )
+
+        return Response(
+            {"detail": "Saved listing removed successfully."},
+            status=status.HTTP_200_OK,
+        )
