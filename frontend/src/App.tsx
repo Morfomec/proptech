@@ -134,12 +134,18 @@
 // }
 
 
-import { Test } from "@/components/ui/Test";
+// import { Test } from "@/components/ui/Test";
+
+// export default function App() {
+//   return (
+//     <div>
+//       <Test />
+//     </div>
+//   );
+// }
+
+import { LoginPage } from "@/features/auth/pages/LoginPage";
 
 export default function App() {
-  return (
-    <div>
-      <Test />
-    </div>
-  );
+  return <LoginPage />;
 }
