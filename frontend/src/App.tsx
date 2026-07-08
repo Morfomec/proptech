@@ -123,12 +123,23 @@
 
 
 
+// export default function App() {
+//   return (
+//     <div className="flex min-h-screen items-center justify-center">
+//       <h1 className="text-4xl font-bold text-blue-600">
+//         PropTech Frontend
+//       </h1>
+//     </div>
+//   );
+// }
+
+
+import { Test } from "@/components/ui/Test";
+
 export default function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-4xl font-bold text-blue-600">
-        PropTech Frontend
-      </h1>
+    <div>
+      <Test />
     </div>
   );
 }
