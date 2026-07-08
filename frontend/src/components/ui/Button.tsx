@@ -15,9 +15,11 @@ export function Button({ variant = 'primary', children, icon, className = '', ..
   };
 
   return (
-    <button className={`${baseStyles} ${variants[variant]} ${className}`} onClick={() => {}} {...props}>
-      {icon}
-      {children}
+    <button 
+        className={`${baseStyles} ${variants[variant]} ${className}`} 
+        {...props}>
+        {icon}
+        {children}
     </button>
   );
 }

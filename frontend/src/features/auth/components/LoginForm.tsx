@@ -48,12 +48,12 @@ export function LoginForm() {
               <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
               <span className="text-slate-600">Remember me</span>
             </label>
-            <button type="button" className="font-medium text-emerald-600 hover:text-emerald-500" onClick={() => {}}>
+            <button type="button" className="font-medium text-emerald-600 hover:text-emerald-500" >
               Forgot password?
             </button>
           </div>
 
-          <Button type="submit" className="mt-2" onClick={() => {}}>
+          <Button type="submit" className="mt-2" >
             Sign in
           </Button>
         </form>
@@ -67,7 +67,7 @@ export function LoginForm() {
           </div>
         </div>
 
-        <Button variant="outline" type="button" onClick={() => {}} icon={
+        <Button variant="outline" type="button" icon={
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -92,7 +92,7 @@ export function LoginForm() {
 
         <p className="mt-8 text-center text-sm text-slate-500">
           Don't have an account?{' '}
-          <button type="button" className="font-medium text-emerald-600 hover:text-emerald-500" onClick={() => {}}>
+          <button type="button" className="font-medium text-emerald-600 hover:text-emerald-500" >
             Sign up
           </button>
         </p>

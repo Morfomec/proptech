@@ -1,7 +1,7 @@
 // src/components/LoginHero.tsx
 import { BarChart3, ShieldCheck, Building2 } from 'lucide-react';
 
-export function LoginHero() {
+export function AuthHero() {
   return (
     <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-slate-900 lg:flex">
       <div 

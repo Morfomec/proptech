@@ -144,8 +144,9 @@
 //   );
 // }
 
-import { LoginPage } from "@/features/auth/pages/LoginPage";
+// import { LoginPage } from "@/features/auth/pages/LoginPage";
+import AppRouter from "./routes/AppRouter";
 
 export default function App() {
-  return <LoginPage />;
+  return <AppRouter />;
 }
