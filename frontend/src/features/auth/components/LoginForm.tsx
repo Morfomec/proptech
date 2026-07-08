@@ -1,10 +1,44 @@
 // src/components/LoginForm.tsx
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+  loginSchema,
+  type LoginFormData,
+} from "@/features/auth/schemas/login.schema";
+
+
 import { Mail, Lock, Eye, Building2 } from 'lucide-react';
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
+import { login } from "@/api/auth.api";
+
 
 export function LoginForm() {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<LoginFormData>({
+        resolver: zodResolver(loginSchema),
+    });
+
+    // const onSubmit = (data: LoginFormData) => {
+    //     console.log(data);
+    // };
+
+    const onSubmit = async (data: LoginFormData) => {
+        try {
+            const response = await login(data);
+
+            console.log("Login successful");
+        } catch (error) {
+            console.error("Login Failed:", error);
+        }
+    };
+
+
   return (
     <div className="flex w-full flex-col justify-center px-4 sm:px-12 lg:w-1/2 lg:px-24 xl:px-32">
       <div className="mx-auto flex w-full max-w-sm flex-col">
@@ -27,12 +61,13 @@ export function LoginForm() {
           <p className="text-sm text-slate-500">Please enter your details to sign in.</p>
         </div>
 
-        <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
-          <Input 
-            label="Email address or Phone Number"
+        <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
+          <Input
+            label="Email"
             type="email"
-            placeholder="name@company.com"
+            placeholder="name@example.com"
             icon={<Mail className="h-4 w-4" />}
+            {...register("email")}
           />
           
           <Input 
@@ -41,6 +76,7 @@ export function LoginForm() {
             placeholder="••••••••"
             icon={<Lock className="h-4 w-4" />}
             rightIcon={<Eye className="h-4 w-4" />}
+            {...register("password")}
           />
 
           <div className="flex items-center justify-between text-sm">
