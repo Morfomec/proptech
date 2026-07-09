@@ -12,7 +12,7 @@ import {
   type RegisterFormData,
 } from "@/features/auth/schemas/register.schema";
 
-import { register as registerUser } from "@/api/auth.api";
+import { register as registerUser } from "@/features/auth/api/authi.api";
 
 import { APP } from "@/constants/app";
 import { ROUTES } from "@/constants/routes";
@@ -41,7 +41,13 @@ export function RegisterForm() {
     try {
       await registerUser(data);
 
-      navigate(ROUTES.VERIFY_EMAIL);
+      sessionStorage.setItem(
+        "pendingEMail",
+        data.email
+      );
+
+
+      navigate(ROUTES.VERIFICATION_PENDING);
     } catch {
       setRegisterError("Registration failed. Please try again.");
     } finally {

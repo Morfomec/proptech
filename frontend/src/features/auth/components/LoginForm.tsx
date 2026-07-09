@@ -12,13 +12,14 @@ import { Mail, Lock, Eye, Building2, EyeOff } from 'lucide-react';
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
-import { login } from "@/api/auth.api";
+import { login } from "@/features/auth/api/authi.api";
 import { saveTokens } from "@/utils/token";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 
 import { APP } from "@/constants/app";
 import { ROUTES } from "@/constants/routes";
+import { FormAlert } from "@/components/ui/FormALert";
 
 export function LoginForm() {
     const {
@@ -83,9 +84,7 @@ export function LoginForm() {
         </div>
 
         {loginError && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {loginError}
-        </div>
+          <FormAlert message={loginError} />
         )}
 
         <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
@@ -134,9 +133,9 @@ export function LoginForm() {
               <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-brand-primary focus:ring-brand-primary transition-colors" disabled={isLoading} />
               <span className="text-slate-600">Remember me</span>
             </label>
-            <button type="button" className="font-medium text-brand-primary hover:text-brand-primary/80 transition-colors" >
+            <Link to={ROUTES.FORGOT_PASSWORD} className="font-medium text-brand-primary hover:text-brand-primary/80 transition-colors" >
               Forgot password?
-            </button>
+            </Link>
           </div>
 
           <Button type="submit" className="mt-2" isLoading={isLoading}>

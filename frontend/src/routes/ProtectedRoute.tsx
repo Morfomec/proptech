@@ -1,6 +1,6 @@
 import { Navigate } from "react-router";
 import { getAccessToken } from "@/utils/token";
-import { ROUTES } from "@/features/auth/components/AuthFooter";
+import { ROUTES } from "@/constants/routes";
 
 interface Props {
   children: React.ReactNode;

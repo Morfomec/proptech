@@ -5,7 +5,7 @@ export const ROUTES = {
 
   REGISTER: "/register",
 
-  VERIFY_EMAIL: "/verify-email",
+  // VERIFY_EMAIL: "/verify-email",
 
   FORGOT_PASSWORD: "/forgot-password",
 
@@ -18,4 +18,11 @@ export const ROUTES = {
   PROPERTIES: "/properties",
 
   LISTINGS: "/listings",
+
+  VERIFICATION_PENDING: "/verify-email",
+
+  VERIFY_EMAIL: "/verify-email/:uid/:token",
+
+  RESET_PASSWORD_SUCCESS: "/reset-password-success",
 } as const;
+
