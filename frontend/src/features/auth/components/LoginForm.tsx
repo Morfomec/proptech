@@ -8,12 +8,17 @@ import {
 } from "@/features/auth/schemas/login.schema";
 
 
-import { Mail, Lock, Eye, Building2 } from 'lucide-react';
+import { Mail, Lock, Eye, Building2, EyeOff } from 'lucide-react';
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
 import { login } from "@/api/auth.api";
+import { saveTokens } from "@/utils/token";
+import { Link, useNavigate } from "react-router";
+import { useState } from "react";
 
+import { APP } from "@/constants/app";
+import { ROUTES } from "@/constants/routes";
 
 export function LoginForm() {
     const {
@@ -24,27 +29,43 @@ export function LoginForm() {
         resolver: zodResolver(loginSchema),
     });
 
-    // const onSubmit = (data: LoginFormData) => {
-    //     console.log(data);
-    // };
+    const navigate = useNavigate();
+    const [loginError, setloginError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const onSubmit = async (data: LoginFormData) => {
+        setloginError("");
+        setIsLoading(true);
+
         try {
             const response = await login(data);
 
-            console.log("Login successful");
+            saveTokens(
+                response.tokens.access,
+                response.tokens.refresh
+            );
+
+            navigate(ROUTES.DASHBOARD);
+
+            console.log("Logged in!");
         } catch (error) {
-            console.error("Login Failed:", error);
+
+            setloginError("Invalid email or password.");
+        }finally {
+
+            setIsLoading(false);
         }
     };
-
+    
+    
 
   return (
     <div className="flex w-full flex-col justify-center px-4 sm:px-12 lg:w-1/2 lg:px-24 xl:px-32">
       <div className="mx-auto flex w-full max-w-sm flex-col">
         
         <div className="mb-8 flex items-center justify-center gap-2 text-slate-900 lg:hidden">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary shadow-sm shadow-brand-primary/20">
             <Building2 className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-bold tracking-tight">PropTech</span>
@@ -52,14 +73,20 @@ export function LoginForm() {
 
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-6 hidden items-center gap-2 text-slate-900 lg:flex">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary shadow-sm shadow-brand-primary/20">
               <Building2 className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight">proptech</span>
+            <span className="text-xl font-bold tracking-tight">{APP.NAME}</span>
           </div>
           <h2 className="mb-2 text-2xl font-bold text-slate-900">Welcome back</h2>
           <p className="text-sm text-slate-500">Please enter your details to sign in.</p>
         </div>
+
+        {loginError && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {loginError}
+        </div>
+        )}
 
         <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
           <Input
@@ -68,28 +95,51 @@ export function LoginForm() {
             placeholder="name@example.com"
             icon={<Mail className="h-4 w-4" />}
             {...register("email")}
+            autoComplete="email"
+            disabled={isLoading}
           />
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-500">
+                {errors.email.message}
+            </p>
+            )}
           
           <Input 
             label="Password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="••••••••"
             icon={<Lock className="h-4 w-4" />}
-            rightIcon={<Eye className="h-4 w-4" />}
+            rightIcon={
+                showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                ):(
+                    <Eye className="h-4 w-4" />
+                )
+            }
+            onRightIconClick={() =>
+                setShowPassword((prev) => !prev)
+            }
             {...register("password")}
+            autoComplete="current-password"
+            disabled={isLoading}
           />
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-500">
+                {errors.password.message}
+            </p>
+            )}
 
           <div className="flex items-center justify-between text-sm">
             <label className="flex cursor-pointer items-center gap-2">
-              <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+              <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-brand-primary focus:ring-brand-primary transition-colors" disabled={isLoading} />
               <span className="text-slate-600">Remember me</span>
             </label>
-            <button type="button" className="font-medium text-emerald-600 hover:text-emerald-500" >
+            <button type="button" className="font-medium text-brand-primary hover:text-brand-primary/80 transition-colors" >
               Forgot password?
             </button>
           </div>
 
-          <Button type="submit" className="mt-2" >
+          <Button type="submit" className="mt-2" isLoading={isLoading}>
             Sign in
           </Button>
         </form>
@@ -128,9 +178,11 @@ export function LoginForm() {
 
         <p className="mt-8 text-center text-sm text-slate-500">
           Don't have an account?{' '}
-          <button type="button" className="font-medium text-emerald-600 hover:text-emerald-500" >
+          <Link to={ROUTES.REGISTER}>
+          <button type="button" className="font-medium text-brand-primary hover:text-brand-primary/80 transition-colors" >
             Sign up
           </button>
+          </Link>
         </p>
 
       </div>

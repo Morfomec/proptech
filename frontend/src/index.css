@@ -113,3 +113,10 @@ code {
 
 
 @import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #408A71;
+  --color-brand-dark: #091413;
+  --color-brand-secondary: #285A48;
+  --color-brand-accent: #B0E4CC;
+}
