@@ -176,3 +176,6 @@ SUPPORT_EMAIL = config("SUPPORT_EMAIL")
 AUTH_USER_MODEL = "accounts.User"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+# Expire password reset tokens in 1 hour (3600 seconds)
+PASSWORD_RESET_TIMEOUT = 3600
+
