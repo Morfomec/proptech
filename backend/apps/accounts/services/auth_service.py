@@ -24,6 +24,7 @@ class AuthService:
 
 
 
+
     @staticmethod
     @transaction.atomic
     def register_user(validated_data):
@@ -62,7 +63,7 @@ class AuthService:
 
         user = User.objects.create_user(**validated_data)
 
-        AuthService._initialize_user(user)
+        AuthService.initialize_user(user)
         
         AuthService.send_verification_email(user)
 
@@ -70,7 +71,7 @@ class AuthService:
 
     #an help methode to make the register_user method light and simplified
     @staticmethod
-    def _initialize_user(user):
+    def initialize_user(user):
         """Creat default resources for a newly registered user."""
 
         UserProfile.objects.create(user=user)
@@ -162,6 +163,21 @@ class AuthService:
 # Authentication ------------------------------------------------
 
 
+    @staticmethod
+    def generate_tokens(user):
+        """Generate JWT access and refresh tokens for a user."""
+
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
+
+        return {
+            "tokens": {
+                "access": str(access),
+                "refresh": str(refresh),
+            }
+        }
+
+
 
 
     @staticmethod
@@ -189,11 +205,7 @@ class AuthService:
         access = refresh.access_token
 
         return {
-            # "user": user,
-            "tokens":{
-                "access": str(access),
-                "refresh": str(refresh),
-            },
+            "tokens": AuthService.generate_tokens(user),
         }
 
     @staticmethod

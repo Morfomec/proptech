@@ -15,15 +15,18 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError("Email address is required.")
 
-        if not password:
-            raise ValueError("Password is required.")
+        # if not password:
+        #     raise ValueError("Password is required.")
 
         email = email.strip()
         email = self.normalize_email(email)
         
         user = self.model(email=email, **extra_fields)
 
-        user.set_password(password)
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
 
         user.save(using=self._db)
 
