@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate} from "react-router";
 import ProtectedRoute from "./ProtectedRoute";
 
-import { ROUTES } from "@/constants/routes";
+import { ROUTES } from "../constants/routes";
 
 import { LoginPage } from "@/features/auth/pages/LoginPage";
 import { RegisterPage } from "@/features/auth/pages/RegisterPage";

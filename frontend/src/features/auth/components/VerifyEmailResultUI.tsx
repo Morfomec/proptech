@@ -7,9 +7,10 @@ import { Link } from "react-router";
 interface VerifyEmailResultUIProps {
   status: "loading" | "success" | "error";
   onRetry?: () => void;
+  errorMessage?: string;
 }
 
-export function VerifyEmailResultUI({ status, onRetry }: VerifyEmailResultUIProps) {
+export function VerifyEmailResultUI({ status, onRetry, errorMessage }: VerifyEmailResultUIProps) {
   return (
     <div className="flex w-full flex-col justify-center px-4 sm:px-12 lg:w-1/2 lg:px-24 xl:px-32">
       <div className="mx-auto flex w-full max-w-sm flex-col items-center text-center">
@@ -72,7 +73,7 @@ export function VerifyEmailResultUI({ status, onRetry }: VerifyEmailResultUIProp
                 Verification Failed
               </h2>
               <p className="text-sm text-slate-500 mb-6">
-                The verification link is invalid or has expired. Please request a new verification link.
+                {errorMessage || "The verification link is invalid or has expired. Please request a new verification link."}
               </p>
               <Button type="button" className="w-full" onClick={onRetry}>
                 Request New Link

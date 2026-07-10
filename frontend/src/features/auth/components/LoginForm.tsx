@@ -17,9 +17,11 @@ import { saveTokens } from "@/utils/token";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 
+
 import { APP } from "@/constants/app";
 import { ROUTES } from "@/constants/routes";
 import { FormAlert } from "@/components/ui/FormAlert";
+import { getApiErrorMessage } from "@/api/error";
 
 export function LoginForm() {
     const {
@@ -51,9 +53,8 @@ export function LoginForm() {
 
             console.log("Logged in!");
         } catch (error) {
-
-            setloginError("Invalid email or password.");
-        }finally {
+            setloginError(getApiErrorMessage(error));
+        } finally {
 
             setIsLoading(false);
         }

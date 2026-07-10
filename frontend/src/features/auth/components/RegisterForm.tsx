@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, Eye, EyeOff, User, Mail, Lock } from "lucide-react";
+import { getApiErrorMessage } from "@/api/error";
+
 
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -48,8 +50,8 @@ export function RegisterForm() {
 
 
       navigate(ROUTES.VERIFICATION_PENDING);
-    } catch {
-      setRegisterError("Registration failed. Please try again.");
+    } catch (error) {
+        setRegisterError(getApiErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

@@ -13,7 +13,7 @@ import {
   from "@/features/auth/schemas/forgot-password.schema";
 import { useState } from "react";
 import { requestPasswordReset } from "@/features/auth/api/authi.api";
-
+import { getApiErrorMessage } from "@/api/error";
 
 export function ForgotPasswordForm() {
   
@@ -30,14 +30,17 @@ export function ForgotPasswordForm() {
     setIsLoading(true);
 
     try {
-      await requestPasswordReset(data.email);
+        await requestPasswordReset(data.email);
 
-      setIsSuccess(true);
-    } catch (error: any) {
-      console.error("Forgot Password Error:", error.response || error);
-      setSubmitError(`Failed to send reset link. Error: ${error.response?.status || 'Network Error'}`);
+        setSubmitError("");
+        setIsSuccess(true);
+
+    } catch (error) {
+        setSubmitError(getApiErrorMessage(error));
+        setIsSuccess(false);
+
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 

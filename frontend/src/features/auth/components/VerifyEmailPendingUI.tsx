@@ -6,6 +6,7 @@ import { Link } from "react-router";
 
 import { resendVerification } from "../api/authi.api";
 import { useState } from "react";
+import { getApiErrorMessage } from "@/api/error";
 
 export function VerifyEmailPendingUI() {
   const [isResending, setIsResending] = useState(false);
@@ -22,8 +23,8 @@ export function VerifyEmailPendingUI() {
       await resendVerification(userEmail);
       alert("Verification email sent!"); // Optional: show a quick success message
     } catch (error) {
-      alert("Failed to resend. Please try again.");
-    } finally {
+        alert(getApiErrorMessage(error));
+    }finally {
       setIsResending(false);
     }
   };

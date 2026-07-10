@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPasswordSchema, type ResetPasswordFormData} from "@/features/auth/schemas/reset-password.schema";
 import { confirmPasswordReset } from "@/features/auth/api/authi.api";
 import { ROUTES } from "@/constants/routes";
+import { getApiErrorMessage } from "@/api/error";
 
 export function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -29,21 +30,26 @@ export function ResetPasswordForm() {
   })
 
   const onSubmit = async (data: ResetPasswordFormData) => {
-    try {
-      await confirmPasswordReset({ 
-        uid: uid!, 
-        token: token!, 
-        password: data.password, 
-        confirm_password: data.confirm_password 
-      });
-      navigate(ROUTES.RESET_PASSWORD_SUCCESS);
-    } catch(error: any) {
-      console.error(error.response || error);
-      setSubmitError("Failed to reset password. The link might be expired or invalid.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+      setSubmitError("");
+      setIsLoading(true);
+
+      try {
+          await confirmPasswordReset({
+              uid: uid!,
+              token: token!,
+              password: data.password,
+              confirm_password: data.confirm_password,
+          });
+
+          navigate(ROUTES.RESET_PASSWORD_SUCCESS);
+
+      } catch (error) {
+          setSubmitError(getApiErrorMessage(error));
+
+      } finally {
+          setIsLoading(false);
+      }
+  };
 
   return (
     <div className="flex w-full flex-col justify-center px-4 sm:px-12 lg:w-1/2 lg:px-24 xl:px-32">
