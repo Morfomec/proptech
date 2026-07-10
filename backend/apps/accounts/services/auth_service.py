@@ -107,16 +107,14 @@ class AuthService:
             user = User.objects.get(email=email)
 
         except User.DoesNotExist:
-            return
-            # raise ValidationError(
-            #     {"email": "User not found."}
-            # )
+            raise ValidationError(
+                {"email": "User not found."}
+            )
 
         if user.is_email_verified:
-            return
-            # raise ValidationError(
-            #     {"email": "Email is already verified."}
-            # )
+            raise ValidationError(
+                {"email": "Email is already verified."}
+            )
 
         AuthService.send_verification_email(user)
 
