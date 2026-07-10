@@ -178,7 +178,12 @@ DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 SUPPORT_EMAIL = config("SUPPORT_EMAIL")
 
 AUTH_USER_MODEL = "accounts.User"
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config("DEFAULT_FROM_EMAIL")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
 API_PREFIX = "api/v1"
 
