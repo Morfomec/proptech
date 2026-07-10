@@ -184,3 +184,5 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 # Expire password reset tokens in 1 hour (3600 seconds)
 PASSWORD_RESET_TIMEOUT = 3600
 
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
+
