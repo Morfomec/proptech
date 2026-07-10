@@ -21,6 +21,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 API_PREFIX = "api/v1"
 
 urlpatterns = [

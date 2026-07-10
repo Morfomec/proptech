@@ -1,8 +1,8 @@
-from django.urls import path
+from django.urls import path, include
 
 from apps.accounts.views import (
     RegisterAPIView, LoginAPIView, CurrentUserAPIView, LogoutAPIView, ForgotPasswordAPIView, ResetPasswordAPIView,
-    VerifyEmailAPIView, ResendVerificationAPIView, MyProfileView,
+    VerifyEmailAPIView, ResendVerificationAPIView, MyProfileView, 
 )
 
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -18,4 +18,5 @@ urlpatterns = [
     path("verify-email/", VerifyEmailAPIView.as_view(), name="verify-email"),
     path("resend-email-verification/", ResendVerificationAPIView.as_view(), name="resend-email-verification"),
 
+    path("", include("apps.accounts.urls.social_auth_urls")),
 ]
