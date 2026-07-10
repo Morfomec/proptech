@@ -19,7 +19,7 @@ import { useState } from "react";
 
 import { APP } from "@/constants/app";
 import { ROUTES } from "@/constants/routes";
-import { FormAlert } from "@/components/ui/FormALert";
+import { FormAlert } from "@/components/ui/FormAlert";
 
 export function LoginForm() {
     const {
