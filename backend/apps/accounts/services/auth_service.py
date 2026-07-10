@@ -10,7 +10,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from .email_service import EmailService
-
+from apps.accounts.models import (User)
 
 
 User = get_user_model()
@@ -28,12 +28,55 @@ class AuthService:
     @transaction.atomic
     def register_user(validated_data):
         validated_data.pop("confirm_password")
+
+        email = validated_data["email"]
+
+        if User.objects.filter(email=email, is_email_verified=True).exists():
+            raise ValidationError(
+                {"email": "A user with this email already exists."}
+            )
+        
+        if User.objects.filter(email=email, is_email_verified=False).exists():
+            raise ValidationError({
+                    "email": 
+                    "This email has not been verified."
+                    "Please verify your email or request a new verification email."
+            })
+
+
+        # existing_user = User.objects.filter(email=email).first()
+
+        # if existing_user:
+        #     if existing_user.is_email_verified:
+        #         raise ValidationError(
+        #             {"email": "A user with this email already exists."}
+        #         )
+            
+            # #if user exists nit has not verified their email.
+            # AuthService.send_verification_email(existing_user)
+
+            # return {
+            #     "user": existing_user,
+            #     "verification_resent" : True,
+            # }
+
         user = User.objects.create_user(**validated_data)
 
+        AuthService._initialize_user(user)
+        
         AuthService.send_verification_email(user)
 
         return user
 
+    #an help methode to make the register_user method light and simplified
+    @staticmethod
+    def _initialize_user(user):
+        """Creat default resources for a newly registered user."""
+
+        UserProfile.objects.create(user=user)
+        UserAddress.objects.create(user=user)
+        tenant_role = Role.objects.get(name=Role.RoleChoices.TENANT)
+        UserRole.objects.create(user=user, role=tenant_role)
     
     
     @staticmethod
@@ -62,15 +105,18 @@ class AuthService:
 
         try:
             user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            raise ValidationError(
-                {"email": "User not found."}
-            )
 
-        if user.email_verified:
-            raise ValidationError(
-                {"email": "Email is already verified."}
-            )
+        except User.DoesNotExist:
+            return
+            # raise ValidationError(
+            #     {"email": "User not found."}
+            # )
+
+        if user.is_email_verified:
+            return
+            # raise ValidationError(
+            #     {"email": "Email is already verified."}
+            # )
 
         AuthService.send_verification_email(user)
 
@@ -101,7 +147,7 @@ class AuthService:
                 {"token": "Invalid verification link."}
             )
 
-        if user.email_verified:
+        if user.is_email_verified:
             raise ValidationError(
                 {
                     "email": "Email is already verified."
@@ -109,9 +155,9 @@ class AuthService:
             )
 
 
-        user.email_verified = True
+        user.is_email_verified = True
 
-        user.save(update_fields=["email_verified"])
+        user.save(update_fields=["is_email_verified"])
 
 
 
@@ -133,6 +179,11 @@ class AuthService:
         if user is None:
             raise AuthenticationFailed(
                 "Invalid email or password."
+            )
+        
+        if not user.is_email_verified:
+            raise AuthenticationFailed(
+                "Please verify your email."
             )
 
 

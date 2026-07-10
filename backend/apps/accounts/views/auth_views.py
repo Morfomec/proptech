@@ -128,5 +128,9 @@ class ResendVerificationAPIView(APIView):
 
 
         return Response(
-            {"message": "Verification email sent  successfully."}, status=status.HTTP_200_OK,
+            {
+                "message":
+                "If an unverified account exists, "
+                "a verification email has been sent."
+            }
         )
