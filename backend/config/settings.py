@@ -33,7 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    #Django Apps
+    # Django Apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -41,17 +41,20 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    #Third Party Apps
+    # Third Party Apps
     "rest_framework",
     "corsheaders",
     "rest_framework_simplejwt.token_blacklist",
 
-    #Local Apps
+    # Local Apps
     "apps.accounts",
+    "apps.properties",
+    "apps.common",
+    "apps.listings",
 ]
 
 MIDDLEWARE = [
-    #Django Middlewares
+    # Django Middlewares
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -160,13 +163,14 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATW_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
 }
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 APP_NAME = config("APP_NAME")
 FRONTEND_URL = config("FRONTEND_URL")
@@ -181,8 +185,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config("DEFAULT_FROM_EMAIL")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
+API_PREFIX = "api/v1"
+
 # Expire password reset tokens in 1 hour (3600 seconds)
 PASSWORD_RESET_TIMEOUT = 3600
 
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
-

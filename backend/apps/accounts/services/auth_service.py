@@ -10,7 +10,9 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from .email_service import EmailService
-from apps.accounts.models import (User)
+
+from apps.accounts.models import (User, UserProfile, UserAddress, UserRole, Role)
+
 
 
 User = get_user_model()
